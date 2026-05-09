@@ -217,8 +217,8 @@ public class BrowserActivity2 extends AppCompatActivity {
             if (url != null && url.equals(MyApplication.getClickDownloadUrl())) {
                 showFragment(backFragment);
             } else {
-                /* 此方法返回可能有空白页面 但是全些
-                boolean backFlag = false;
+                // 此方法返回可能有空白页面 但是全些
+                /* boolean backFlag = false;
                  try {
                      // String url1 = fragment.getArguments().getString("url");
                      // String url2 = backFragment.getArguments().getString("url");
