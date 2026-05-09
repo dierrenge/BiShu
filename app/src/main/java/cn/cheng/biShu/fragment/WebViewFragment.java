@@ -49,14 +49,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +63,6 @@ import cn.cheng.biShu.bean.DownloadBean;
 import cn.cheng.biShu.bean.SysBean;
 import cn.cheng.biShu.custom.FeetDialog;
 import cn.cheng.biShu.custom.MyToast;
-import cn.cheng.biShu.custom.MyWebView;
 import cn.cheng.biShu.service.DownloadService;
 import cn.cheng.biShu.util.AdBlocker;
 import cn.cheng.biShu.util.AssetsReader;
@@ -82,7 +77,7 @@ public class WebViewFragment extends Fragment {
     private ProgressBar viewViewProgressbar;
     private LinearLayout progressBg;
     private Handler progressHandler;
-    private MyWebView webView;
+    private WebView webView;
     private CallListener callListener;
 
     private CustomWebChromeClient xwebchromeclient;
@@ -719,15 +714,9 @@ public class WebViewFragment extends Fragment {
                 return true;
             }
 
-            // 判断是否用户点击的连接
-            boolean isUserClick = webView.isUserClickTriggered();
-            if (isUserClick) {
-                webView.resetClickState();
-            }
-            CommonUtils.saveLog("isUserClick:" + isUserClick +"=======hasGesture:" + request.hasGesture() + "\n" + url);
             // 仅处理用户触发的 非重定向 主框架请求
             if ((request.getRequestHeaders() == null || request.getRequestHeaders().get("Referer") == null)
-                    && !request.isRedirect() && request.isForMainFrame() && isUserClick) {
+                    && !request.isRedirect() && request.isForMainFrame() && request.hasGesture()) {
                 if (callListener != null) {
                     // 暂停webView
                     // view.stopLoading();// 中止当前网络加载(延时 保证cookie等数据处理完毕)
