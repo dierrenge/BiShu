@@ -206,7 +206,7 @@ public class BrowserActivity2 extends AppCompatActivity {
         for (int i = backStack.size() - 1; i >= 0; i--) {
             str += backStack.get(i).getWebView().getUrl() + "\n";
         }
-        System.out.println(backStack.size() + "返回栈：\n" + str);*/
+        CommonUtils.saveLog(backStack.size() + "返回栈：\n" + str);*/
         int size = backStack.size();
         if (size > 1) {
             WebViewFragment fragment = backStack.pop();
@@ -217,12 +217,14 @@ public class BrowserActivity2 extends AppCompatActivity {
             if (url != null && url.equals(MyApplication.getClickDownloadUrl())) {
                 showFragment(backFragment);
             } else {
+                /* 此方法返回可能有空白页面 但是全些
                 boolean backFlag = false;
-                // try {
-                //     String url1 = fragment.getArguments().getString("url");
-                //     String url2 = backFragment.getArguments().getString("url");
-                //     if (url2.equals(url1)) backFlag = true;
-                // } catch (Exception ignored) {}
+                 try {
+                     // String url1 = fragment.getArguments().getString("url");
+                     // String url2 = backFragment.getArguments().getString("url");
+                     // if (url2.equals(url1)) backFlag = true;
+                     if (backFragment.getWebView().getUrl().equals(url)) backFlag = true;
+                 } catch (Exception ignored) {}
                 if (backFlag) { // 相邻两个页面网址相同的情况
                     // 隐藏上一个fragment
                     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -232,24 +234,22 @@ public class BrowserActivity2 extends AppCompatActivity {
                 } else {
                     forwardStack.push(preFragment);
                     showFragment(backFragment);
-                }
+                }*/
                 // 判断上一个网页是否空白的
-                /*backFragment.checkIfPageIsEmpty(previousIsEmpty -> {
+                backFragment.checkIfPageIsEmpty(previousIsEmpty -> {
                     // 递归处理空白页
                     if (previousIsEmpty) {
                         // 隐藏上一个fragment
-                        if (fragment != null) {
-                            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                            fragmentTransaction.hide(fragment);
-                            fragmentTransaction.commit();
-                        }
+                        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.hide(fragment);
+                        fragmentTransaction.commit();
                         onBack();
                     } else {
                         forwardStack.push(preFragment);
                         // System.out.println("*************************" + backFragment.getWebView().getUrl());
                         showFragment(backFragment);
                     }
-                });*/
+                });
             }
         } else {
             BrowserActivity2.super.onBackPressed();

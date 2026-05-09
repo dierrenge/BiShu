@@ -325,7 +325,7 @@ public class TxtActivity extends AppCompatActivity {
                 public boolean handleMessage(@NonNull Message message) {
                     if (message.what == 0 && txtUrl.equals((String) message.obj)) {
                         // 翻页控制
-                        new Handler().postDelayed(() -> MyApplication.turnThePage = false, 2500);
+                        new Handler().postDelayed(() -> MyApplication.turnThePage = false, 1500);
                         setNextPosition();
                     }
                     return false;

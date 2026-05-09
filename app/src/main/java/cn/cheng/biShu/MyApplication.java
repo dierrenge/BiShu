@@ -17,7 +17,7 @@ import cn.cheng.biShu.util.CommonUtils;
 
 public class MyApplication extends Application {
 
-    public static final double MIN_AVL_MEM_PCT = 0.16; // 最小可用内存占比
+    public static final double MIN_AVL_MEM_PCT = 0.15; // 最小可用内存占比
 
     private static Context context;
 

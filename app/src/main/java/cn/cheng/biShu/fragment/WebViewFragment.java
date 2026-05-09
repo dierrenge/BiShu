@@ -726,14 +726,12 @@ public class WebViewFragment extends Fragment {
             }
             // 仅处理用户触发的 非重定向 主框架请求
             if ((request.getRequestHeaders() == null || request.getRequestHeaders().get("Referer") == null)
-                    && !request.isRedirect() && request.isForMainFrame() && isUserClick) {
+                    && !request.isRedirect() && request.isForMainFrame() || isUserClick) {
                 if (callListener != null) {
                     // 暂停webView
-                     new Handler().postDelayed(() -> {
-                         view.stopLoading();
-                     }, 200);
-                     view.onPause();
-                     view.pauseTimers();
+                    new Handler().postDelayed(view::stopLoading, 200);// 中止当前网络加载(延时 保证cookie等数据处理完毕)
+                    view.onPause(); // 暂停WebView的渲染和JS执行
+                    view.pauseTimers(); // 暂停所有WebView的计时器
                     // 跳转
                     callListener.jump(url);
                     // return true; // 拦截跳转，由 Activity 处理

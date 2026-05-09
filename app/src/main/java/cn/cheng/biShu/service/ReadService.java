@@ -81,13 +81,13 @@ public class ReadService extends Service {
                     }
                     @Override
                     public void onDone(String s) {
+                        // 防止多翻页
+                        long endTime = System.currentTimeMillis() - time;
+                        if (txt.length() > 20 && endTime < 4000) return;
                         // 翻页控制
                         MyApplication.turnThePage = true;
                         // 清除旧语音资源
                         speechDestroy();
-                        // 防止多翻页
-                        long endTime = System.currentTimeMillis() - time;
-                        if (txt.length() > 20 && endTime < 4000) return;
                         // 发送Action为com.example.communication.RECEIVER的广播
                         Intent intentReceiver = new Intent("com.example.communication.RECEIVER");
                         intentReceiver.putExtra("txtUrl", txtUrl);
