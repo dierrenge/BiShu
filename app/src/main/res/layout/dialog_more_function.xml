@@ -55,6 +55,24 @@
                 android:textColor="@color/blackGray"
                 android:textSize="16dp"
                 android:text="下载"/>
+            <Button
+                android:id="@+id/settingMoreBtn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="20dp"
+                android:background="@drawable/btn_bg1"
+                android:textColor="@color/blackGray"
+                android:textSize="16dp"
+                android:text="设置"/>
+            <Button
+                android:id="@+id/settingAdBtn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="20dp"
+                android:background="@drawable/btn_bg1"
+                android:textColor="@color/blackGray"
+                android:textSize="16dp"
+                android:text="禁广"/>
         </LinearLayout>
 
     </LinearLayout>

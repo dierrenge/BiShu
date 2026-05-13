@@ -1,10 +1,12 @@
 package cn.cheng.biShu.custom;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -15,6 +17,7 @@ import androidx.annotation.NonNull;
 import cn.cheng.biShu.R;
 import cn.cheng.biShu.activity.DownloadActivity;
 import cn.cheng.biShu.activity.LikeActivity;
+import cn.cheng.biShu.activity.MainActivity;
 import cn.cheng.biShu.activity.TxtListActivity;
 
 /**
@@ -27,6 +30,8 @@ public class MoreFunctionDialog extends Dialog {
     private Button historyBtn;
     private Button novelBtn;
     private Button downloadMoreBtn;
+    private Button settingMoreBtn;
+    private Button settingAdBtn;
     private CallListener callListener;
 
     public MoreFunctionDialog(@NonNull Context context) {
@@ -47,12 +52,14 @@ public class MoreFunctionDialog extends Dialog {
 
         // view窗口显示设置
         Window window = this.getWindow();
-        window.setGravity(Gravity.BOTTOM);
+        window.setGravity(Gravity.TOP);
         window.setWindowAnimations(R.style.DialogAnimation); // 应用动画样式
         // window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         WindowManager.LayoutParams params = window.getAttributes();
         params.width = WindowManager.LayoutParams.MATCH_PARENT;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        params.y = metrics.heightPixels - params.height;
         // params.dimAmount = 0.2F;
         window.setAttributes(params);
 
@@ -73,6 +80,28 @@ public class MoreFunctionDialog extends Dialog {
             Intent i = new Intent(context, DownloadActivity.class);
             context.startActivity(i);
         });
+        settingMoreBtn = this.findViewById(R.id.settingMoreBtn);
+        settingMoreBtn.setOnClickListener(view -> {
+            SettingDialog dialog = new SettingDialog((Activity) context);
+            dialog.setCallListener(new SettingDialog.CallListener() {
+                @Override
+                public void updateSetting() {
+                    callListener.updateSetting(1);
+                }
+            });
+            dialog.show();
+        });
+        settingAdBtn = this.findViewById(R.id.settingAdBtn);
+        settingAdBtn.setOnClickListener(view -> {
+            SettingDialog dialog = new SettingDialog((Activity) context, "input");
+            dialog.setCallListener(new SettingDialog.CallListener() {
+                @Override
+                public void updateSetting() {
+                    callListener.updateSetting(2);
+                }
+            });
+            dialog.show();
+        });
     }
 
     public void setCallListener(CallListener callListener) {
@@ -82,6 +111,8 @@ public class MoreFunctionDialog extends Dialog {
     public interface CallListener {
         // 设置阴影
         void setBackground(boolean flag);
+        // 更新系统参数设置
+        void updateSetting(int flag);
     }
 
     @Override

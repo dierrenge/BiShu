@@ -312,8 +312,10 @@ public class TxtActivity extends AppCompatActivity {
                     setNextPosition();
                 } else {
                     if ("catalog".equals(catalog)) {
-                        TxtActivity.stopReadService(); // 关闭旧朗读资源，避免后续朗读到旧资源
-                        flagRead = true;
+                        if (flagRead) {
+                            TxtActivity.stopReadService(); // 关闭旧朗读资源，避免后续朗读到旧资源
+                            flagRead = true;
+                        }
                         setNextPosition();
                     } else {
                         n_content.setText(positionBean.getTxt());

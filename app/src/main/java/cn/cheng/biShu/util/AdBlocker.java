@@ -10,7 +10,11 @@ import androidx.annotation.WorkerThread;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,7 +39,7 @@ public class AdBlocker {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    loadFromAssets(context);
+                    loadHostInfo(context);
                 } catch (IOException e) {
                     // noop
                 }
@@ -44,22 +48,73 @@ public class AdBlocker {
         }.execute();
     }
 
+    private static File initFromAssets(Context context) {
+        String filePath = PhoneSysPath.getDownloadDir() + "/BiShu/0_like";
+        File hostFile = new File(filePath + "/" + AD_HOSTS_FILE);
+        if (!hostFile.exists()) { // 手机上没有 则先写入默认host文件
+            File pathFile = new File(filePath);
+            if (!pathFile.exists()) pathFile.mkdirs();
+            try (InputStream stream = context.getAssets().open(AD_HOSTS_FILE);
+                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+                 BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(hostFile))) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    bufferedWriter.write(line);
+                    bufferedWriter.newLine();
+                }
+            } catch (Exception ignored) {}
+        }
+        return hostFile;
+    }
+
     @WorkerThread
-    private static void loadFromAssets(Context context) throws IOException {
-        InputStream stream = context.getAssets().open(AD_HOSTS_FILE);
-        InputStreamReader inputStreamReader = new InputStreamReader(stream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            if (line.contains("/")) {
-                AD_URL.add(line);
-            } else {
-                AD_HOSTS.add(line);
+    private static void loadHostInfo(Context context) throws IOException {
+        File hostFile = initFromAssets(context);
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(hostFile))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.contains("/")) {
+                    AD_URL.add(line);
+                } else {
+                    AD_HOSTS.add(line);
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @WorkerThread
+    public static String getHostInfo(Context context) {
+        File hostFile = initFromAssets(context);
+        StringBuffer buffer = new StringBuffer();
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(hostFile))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                buffer.append(line + "\n");
+            }
+        } catch (Exception ignored) {}
+        return buffer.toString();
+    }
+
+    @WorkerThread
+    public static void updateHostInfo(Context context, String text) {
+        File hostFile = initFromAssets(context);
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(hostFile))) {
+            bufferedWriter.write(text);
+        } catch (Exception ignored) {}
+        String[] lines = text.split("\n");
+        if (lines.length > 0) {
+            AD_URL.clear();
+            AD_HOSTS.clear();
+        }
+        for (String line : lines) {
+            if (line != null && !line.trim().replaceAll("/", "").isEmpty()) {
+                if (line.contains("/")) {
+                    AD_URL.add(line);
+                } else {
+                    AD_HOSTS.add(line);
+                }
             }
         }
-        bufferedReader.close();
-        inputStreamReader.close();
-        stream.close();
     }
 
     public static boolean isAd(String url) {

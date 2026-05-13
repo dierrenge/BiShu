@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -31,6 +32,7 @@ import cn.cheng.biShu.R;
 import cn.cheng.biShu.custom.DownloadListDialog;
 import cn.cheng.biShu.custom.MoreFunctionDialog;
 import cn.cheng.biShu.fragment.WebViewFragment;
+import cn.cheng.biShu.util.AdBlocker;
 import cn.cheng.biShu.util.CommonUtils;
 import cn.cheng.biShu.util.SysWindowUi;
 
@@ -71,6 +73,9 @@ public class BrowserActivity2 extends AppCompatActivity {
         }
         // 设置默认导航栏、状态栏样式
         SysWindowUi.setStatusBarNavigationBarStyle(this, SysWindowUi.NO_STATE__NO_STATE);
+
+        // 注册广告过滤器
+        AdBlocker.init(this);
 
         // 注册权限请求的返回监听
         initResultLauncherLauncher();
@@ -124,18 +129,29 @@ public class BrowserActivity2 extends AppCompatActivity {
         btnMonitorL.setOnClickListener(v -> btnMonitor.callOnClick());
         btnMore.setOnClickListener(v -> {
             MoreFunctionDialog dialog = new MoreFunctionDialog(BrowserActivity2.this);
-            dialog.setCallListener(flag -> {
-                if (flag) {
-                    layout_bg.setVisibility(View.VISIBLE);
-                } else {
-                    layout_bg.setVisibility(View.GONE);
+            dialog.setCallListener(new MoreFunctionDialog.CallListener() {
+                @Override
+                public void setBackground(boolean flag) {
+                    if (flag) {
+                        layout_bg.setVisibility(View.VISIBLE);
+                    } else {
+                        layout_bg.setVisibility(View.GONE);
+                    }
+                }
+                @Override
+                public void updateSetting(int flag) {
+                    if (backStack != null) {
+                        // 更新系统参数
+                        WebViewFragment fragment = backStack.peek();
+                        if (flag == 1) fragment.initSetting();
+                        fragment.jumpLoading();
+                    }
                 }
             });
             dialog.show();
         });
         btnMoreL.setOnClickListener(v -> {
-            MoreFunctionDialog dialog = new MoreFunctionDialog(BrowserActivity2.this);
-            dialog.show();
+            btnMore.callOnClick();
         });
 
         // 设置此activity可用于打开 网络链接

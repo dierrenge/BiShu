@@ -22,6 +22,7 @@ import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
@@ -91,12 +92,14 @@ public class WebViewFragment extends Fragment {
     private Handler handler; // 子线程与主线程通信
     private FeetDialog feetDialog;
     private boolean dialogFlag = true; // 是否展示检查下载的提示框
-    private boolean flagGif = true; // 是否开启动图过滤
 
     private Map<String, Boolean> loadedUrls = new HashMap<>(); // 广告链接集
     private HashMap<String, String> downloadNameMap = new HashMap<>(); // 记录a标签下载文件名
 
     private ActivityResultLauncher<Intent> resultLauncher; // 授权回调
+
+    private SysBean sysBean; // 系统参数
+    private boolean onCreated; // 是否已创建
 
     // 无参构造函数
     public WebViewFragment() {
@@ -156,6 +159,9 @@ public class WebViewFragment extends Fragment {
         webView = view.findViewById(R.id.webView);
         video_fullView = (FrameLayout) view.findViewById(R.id.video_fullView);
 
+        // 初始化系统参数
+        initSetting();
+
         // 获取 URL 参数
         Bundle args = getArguments();
         if (args != null) {
@@ -199,14 +205,6 @@ public class WebViewFragment extends Fragment {
             // webView.loadUrl("about:blank");  // 清空内容（可选）
             hideProgress();
         });
-
-        SysBean sysBean = CommonUtils.readObjectFromLocal("SysSetting", SysBean.class);
-        if (sysBean != null) {
-            flagGif = sysBean.isFlagGif();
-        }
-
-        // 注册广告过滤器
-        AdBlocker.init(requireContext());
 
         initWebView();
 
@@ -294,6 +292,11 @@ public class WebViewFragment extends Fragment {
         return view;
     }
 
+    // 初始化系统参数
+    public void initSetting() {
+        sysBean = CommonUtils.readObjectFromLocal("SysSetting", SysBean.class);
+    }
+
     // 下载
     private void download(String url, String titleO, int what) {
         if (what == 6) {
@@ -333,7 +336,7 @@ public class WebViewFragment extends Fragment {
     }
 
     // 刷新网址栏
-    private void jumpLoading() {
+    public void jumpLoading() {
         String webInfo = url_box2.getText().toString();
         if (!CommonUtils.isUrl(webInfo)) {
             webInfo = "https://www.baidu.com/s?wd=" + webInfo;
@@ -349,6 +352,8 @@ public class WebViewFragment extends Fragment {
     private void initWebView() {
         // 初始化 WebView 配置
         WebSettings webSettings = webView.getSettings();
+        // 完全禁用地理定位(安全考虑)
+        webSettings.setGeolocationEnabled(false);
         // 不显示滚动条
         webView.setVerticalScrollBarEnabled(false);
         //设置支持缩放变焦 是否显示缩放按钮，默认false
@@ -381,12 +386,12 @@ public class WebViewFragment extends Fragment {
         //播放音频，多媒体需要用户手动？设置为false为可自动播放
         webSettings.setMediaPlaybackRequiresUserGesture(true);
         // 允许访问文件
-        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowFileAccess(true); // 允许webview 通过 file:// 访问本地文件
         // 设置WebView是否支持多窗口。如果设置为true，主程序要实现onCreateWindow(WebView, boolean, boolean, Message)，默认false
         //webSettings.setSupportMultipleWindows(true);
-        // 允许JavaScript跨域执行
-        webSettings.setAllowUniversalAccessFromFileURLs(true);
-        webSettings.setAllowFileAccessFromFileURLs(true);
+        // 允许JavaScript跨域执行 file://
+        webSettings.setAllowUniversalAccessFromFileURLs(false); // file:// 和 https:// 禁止跨协议访问
+        webSettings.setAllowFileAccessFromFileURLs(false); //  禁止 file:// 页面访问所有源（含网络）
 
         //处理http和https混合的问题(https加载的网页中用http去获取图片了；原因就是安卓5.0以后做了限制，解决方法就一行代码)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -545,7 +550,7 @@ public class WebViewFragment extends Fragment {
             ad = loadedUrls.get(url);
         }
         // gif图片多为广告，直接过滤了
-        if (flagGif) {
+        if (sysBean.isFlagGif()) {
             if (url.contains("?")) {
                 url = url.split("\\?")[0];
             }
@@ -610,16 +615,23 @@ public class WebViewFragment extends Fragment {
             });
 
             // 打印网页源码
-            /*webView.evaluateJavascript("(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();", new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String html) {
-                    String[] split = html.split("u003C");
-                    for (String s : split) {
-                        // 在这里处理获取到的HTML源码
-                        System.out.println("<" + s.replace("\\t", "").replace("\\n", "").replace("\\", ""));
+            if (sysBean.isFlagHtml()) {
+                webView.evaluateJavascript("(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String html) {
+                        String[] split = html.split("u003C");
+                        StringBuilder buffer = new StringBuilder();
+                        for (String s : split) {
+                            // 在这里处理获取到的HTML源码
+                            s = s.replace("\\t", "").replace("\\n", "").replace("\\", "");
+                            if (!s.trim().isEmpty()) {
+                                buffer.append("<" + s + "\n");
+                            }
+                        }
+                        CommonUtils.saveHtml(buffer.toString(), url);
                     }
-                }
-            });*/
+                });
+            }
         }
 
         // 网址 过滤
@@ -824,6 +836,10 @@ public class WebViewFragment extends Fragment {
 
         @Override
         public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            if (sysBean.isFlagLog()) {
+                String message = consoleMessage.message();
+                CommonUtils.saveLog("\n" + MyApplication.jumpUrl + "\nconsole.log:" + message + "\n");
+            }
             super.onConsoleMessage(consoleMessage);
             return false;
         }
@@ -845,6 +861,11 @@ public class WebViewFragment extends Fragment {
             startActivityForResult(intent, REQUESTCODE);
             return true;
             // return super.onShowFileChooser(webView, filePathCallback, fileChooserParams);
+        }
+
+        @Override
+        public void onPermissionRequest(PermissionRequest request) {
+            request.deny(); // 拒绝所有权限请求(安全考虑)
         }
     }
 
@@ -895,15 +916,21 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // 暂停webView
+        // 激活webView
         webView.onResume();
         webView.resumeTimers();
+        if (onCreated) {
+            // 初始化系统参数
+            initSetting();
+        } else {
+            onCreated = true;
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        // 激活webView
+        // 暂停webView
         webView.onPause();
         webView.pauseTimers();
     }

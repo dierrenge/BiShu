@@ -1851,6 +1851,32 @@ public class CommonUtils {
             e.printStackTrace();
         }
     }
+    public static void saveHtml(String html, String url) {
+        new Handler().post(() -> {
+            try {
+                String name = fileNameFormat(url.split("\\?")[0]);
+                File file = CommonUtils.getFile("BiShu/log", name + ".html", "");
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+                    bw.write(html);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    // 文件名格式化 去除 \/:*?<>|
+    public static String fileNameFormat(String name) {
+        name = name.replace("\\" ,"");
+        name = name.replace("/" ,"");
+        name = name.replace(":" ,"");
+        name = name.replace("*" ,"");
+        name = name.replace("?" ,"");
+        name = name.replace("<" ,"");
+        name = name.replace(">" ,"");
+        name = name.replace("|" ,"");
+        return name;
+    }
 
     // 手机目录文件url修正
     public static String correctUrl(Uri uri, Activity activity) {
@@ -2194,8 +2220,9 @@ public class CommonUtils {
                 }
                 if (!fileUris.isEmpty()) {
                     CommonUtils.fileListSort(urls);
-                    Message message = handler.obtainMessage(0);
-                    handler.sendMessage(message);
+                    // 刷新页面（onResume中有此步骤，这里不重复了）
+                    // Message message = handler.obtainMessage(0);
+                    // handler.sendMessage(message);
                 }
             } catch (Throwable e) {
                 CommonUtils.saveLog2("添加文件异常：" + e.getMessage());
