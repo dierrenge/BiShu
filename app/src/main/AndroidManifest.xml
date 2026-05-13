@@ -140,6 +140,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+                <data android:mimeType="text/html" />
             </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"

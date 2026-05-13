@@ -60,4 +60,17 @@ public class ReadView extends TextView {
         }
         return layout.getLineForVertical(getHeight() - getPaddingBottom() - getLineHeight() - getPaddingTop());
     }
+
+    @Override
+    public boolean onTextContextMenuItem(int id) {
+        // 允许复制操作 (id=android.R.id.copy)
+        if (id == android.R.id.copy) {
+            return super.onTextContextMenuItem(id);
+        }
+        // 禁止剪切 (id=android.R.id.cut) 和粘贴 (id=android.R.id.paste)
+        if (id == android.R.id.cut || id == android.R.id.paste) {
+            return true; // 拦截操作但不执行
+        }
+        return super.onTextContextMenuItem(id);
+    }
 }

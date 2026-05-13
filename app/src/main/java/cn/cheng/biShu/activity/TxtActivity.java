@@ -285,7 +285,7 @@ public class TxtActivity extends AppCompatActivity {
                             }
                             break;
                     }
-                    return true;
+                    return false; // 不阻止事件继续传递
                 }
             });
 

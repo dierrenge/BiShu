@@ -73,6 +73,7 @@
             android:lineSpacingMultiplier="1.2"
             android:letterSpacing="0.08"
             android:singleLine="false"
+            android:textIsSelectable="true"
             android:text=""/>
 
     </LinearLayout>

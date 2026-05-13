@@ -624,7 +624,8 @@ public class WebViewFragment extends Fragment {
                         for (String s : split) {
                             // 在这里处理获取到的HTML源码
                             s = s.replace("\\t", "").replace("\\n", "").replace("\\", "");
-                            if (!s.trim().isEmpty()) {
+                            if (!s.trim().isEmpty() && !"\"".equals(s.trim())) {
+                                if (s.trim().endsWith("\"")) s = s.trim().substring(0, s.length() - 1);
                                 buffer.append("<" + s + "\n");
                             }
                         }
