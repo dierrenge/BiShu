@@ -345,6 +345,8 @@ public class WebViewFragment extends Fragment {
                 webInfo = "http://" + webInfo;
             }
         }
+        loadedUrls.clear();
+        webView.clearCache(true);
         webView.clearHistory();
         webView.loadUrl(webInfo);
     }
