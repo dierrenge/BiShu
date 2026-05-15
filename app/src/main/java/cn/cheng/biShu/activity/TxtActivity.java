@@ -69,6 +69,8 @@ public class TxtActivity extends AppCompatActivity {
     // 滑动距离边界值
     private static final int DISTANCE = 10;
 
+    private static final int maxWordCount = 1320; // 字母i  24行、每行55个
+
     // 打开方式 标记
     boolean otherFlag = false;
 
@@ -359,7 +361,7 @@ public class TxtActivity extends AppCompatActivity {
         int endLine = positionBean.getEndLine();
         int endNum = positionBean.getEndNum();
         if (endLine != 0 && (endLine < lines.size() - 1 || (endLine == lines.size() - 1 && endNum < lines.get(endLine).length()))) {
-            positionBean.setSize(1320); // 字母i  24行、每行55个
+            positionBean.setSize(maxWordCount); // 字母i  24行、每行55个
             CommonUtils.readNextPageDef(lines, positionBean);
             n_content.setText(span(positionBean.getTxt()));
             new Handler().post(() -> {
@@ -383,7 +385,7 @@ public class TxtActivity extends AppCompatActivity {
         int startLine = positionBean.getStartLine();
         int startNum = positionBean.getStartNum();
         if (startLine != -1 && startLine <= lines.size() - 1 && !(startNum == 0 && startLine == 0)) {
-            positionBean.setSize(1320); // 字母i  24行、每行55个
+            positionBean.setSize(maxWordCount); // 字母i  24行、每行55个
             CommonUtils.readPreviousPageDef(lines, positionBean);
             n_content.setText(span(positionBean.getTxt()));
             new Handler().post(() -> {
@@ -430,6 +432,10 @@ public class TxtActivity extends AppCompatActivity {
 
     // 预设置文字时，设置文字不可见
     private SpannableStringBuilder span(String txt) {
+        // 当某一行字数过多时会卡住，故超出默认长度时截取部分
+        if (txt.length() > maxWordCount) {
+            txt = txt.substring(0, maxWordCount);
+        }
         SpannableStringBuilder span = new SpannableStringBuilder(txt);
         span.setSpan(new ForegroundColorSpan(Color.TRANSPARENT), 0, txt.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         return span;

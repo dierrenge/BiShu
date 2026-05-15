@@ -635,6 +635,35 @@ public class WebViewFragment extends Fragment {
                     }
                 });
             }
+
+            // 爬虫
+            if (false) {
+                webView.evaluateJavascript("(function() { " +
+                        "var v_domArr = document.getElementsByClassName('TxtContent')[0].getElementsByTagName('p');" +
+                        "var txt = document.getElementsByClassName('sh1')[0].innerText;" +
+                        "for(var i = 0; i < v_domArr.length; i++) {txt += v_domArr[i].innerText + '\\n';}" +
+                        "return txt;" +
+                        " })();", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String txt) {
+                        // 1、存盘
+
+                        // 2、跳转下一页
+                        autoJump();
+                    }
+                });
+            }
+        }
+
+        private void autoJump() {
+            webView.evaluateJavascript(
+                    "(function(){" +
+                            "function getDom(txt) {return document.evaluate('//a[normalize-space(text())=\"'+txt+'\"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;}" +
+                            "var v_dom = getDom('下一页'); if (v_dom.href) {v_dom.click();}" +
+                            "else {var v_dom2 = getDom('下一章'); if (v_dom2.href) {v_dom2.click();}}" +
+                            "})();",
+                    null
+            );
         }
 
         // 网址 过滤
