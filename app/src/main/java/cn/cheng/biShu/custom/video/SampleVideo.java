@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
+
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.cache.CacheFactory;
 import com.shuyu.gsyvideoplayer.cache.ProxyCacheManager;
@@ -222,6 +225,7 @@ public class SampleVideo extends StandardGSYVideoPlayer {
         return setUp0(thisUrl,  (File) null, title);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     public boolean setUp0(String url, File cachePath, String title) {
         boolean cacheWithPlay;
         if (url.toLowerCase().endsWith(".mp4")) {
@@ -236,18 +240,9 @@ public class SampleVideo extends StandardGSYVideoPlayer {
             //exo缓存模式，支持m3u8，只支持exo
             CacheFactory.setCacheManager(ExoPlayerCacheManager.class);
             cacheWithPlay = false;
-            // m3u8格式播放 尝试设置
             if (url.toLowerCase().endsWith(".m3u8")) {
-                VideoOptionModel videoOptionModel0 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", 1);
-                VideoOptionModel videoOptionModel1 =
-                        new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "protocol_whitelist", "crypto,file,http,https,tcp,tls,udp");
-                VideoOptionModel videoOptionModel2 =
-                        new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "allowed_extensions", "ALL");
-                List<VideoOptionModel> list = new ArrayList<>();
-                list.add(videoOptionModel0);
-                list.add(videoOptionModel1);
-                list.add(videoOptionModel2);
-                GSYVideoManager.instance().setOptionModelList(list);
+                // 注入策略（必须在播放器初始化前调用）
+                new HlsErrorPolicyInjector(new SkipCorruptedSegmentPolicy(this)).install(getContext());
             }
         }
         return setUp(url, cacheWithPlay, cachePath, title);

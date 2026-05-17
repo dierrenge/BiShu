@@ -277,6 +277,7 @@ public class M3u8DownLoader {
         int n = 0;
         String relativeUrl = url.substring(0, url.lastIndexOf("/") + 1);
         String relativeUrl2 = DOWNLOADURL.split("//")[0] + "//" + new URI(DOWNLOADURL).getHost();
+        int discontinuityNum = 0;
         for (int i = 0; i < split.length; i++) {
             String s = split[i];
             //如果含有此字段，则获取加密算法以及获取密钥的链接
@@ -291,6 +292,12 @@ public class M3u8DownLoader {
                         keyUrl = split1[1].split("=", 2)[1];
                 }
             } else {
+                // 过滤广告ts （还可以优化）
+                if (s.contains("#EXT-X-DISCONTINUITY")) {
+                    discontinuityNum++;
+                    if (discontinuityNum != 1) continue;
+                }
+                if (discontinuityNum > 0 && discontinuityNum % 2 == 0) continue;
                 // 保存m3u8文本行
                 if (!isTsUrl) {
                     m3u8Lines.add(s);

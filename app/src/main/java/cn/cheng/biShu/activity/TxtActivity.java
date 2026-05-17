@@ -315,7 +315,7 @@ public class TxtActivity extends AppCompatActivity {
                 } else {
                     if ("catalog".equals(catalog)) {
                         if (flagRead) {
-                            TxtActivity.stopReadService(); // 关闭旧朗读资源，避免后续朗读到旧资源
+                            stopReadService();
                             flagRead = true;
                         }
                         setNextPosition();
@@ -480,7 +480,7 @@ public class TxtActivity extends AppCompatActivity {
         // 注销广播
         // 退出该activity也要能播放所以这里停止播放时才注销
         if (!flagRead) {
-            unregisterReceiver(msgReceiver);
+            myUnregisterReceiver();
             MyApplication.setTxtUrl(null);
             TxtActivity.txtActivity = null;
         }
@@ -585,5 +585,11 @@ public class TxtActivity extends AppCompatActivity {
                 flagRead = false;
             } catch (Exception ignored) {}
         }
+    }
+
+    private void myUnregisterReceiver() {
+        try {
+            unregisterReceiver(msgReceiver);
+        } catch (Exception ignored) {}
     }
 }
