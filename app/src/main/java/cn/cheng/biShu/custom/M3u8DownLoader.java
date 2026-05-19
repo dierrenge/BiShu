@@ -270,6 +270,16 @@ public class M3u8DownLoader {
         else urlContent = content;
         if (!urlContent.toString().contains("#EXTM3U"))
             throw new M3u8Exception(DOWNLOADURL + "不是m3u8链接");
+        // 保留原m3u8文本
+        new Thread(() -> {
+            File dir = new File(supDir);
+            if (!dir.exists()) dir.mkdirs();
+            String absolutePath = supDir + "/" + fileName + ".m3u8原";
+            File file = new File(absolutePath);
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+                bw.write(urlContent.toString());
+            } catch (Exception ignored) {}
+        }).start();
         // 解析整理ts链接和加密key链接
         String[] split = urlContent.toString().split("\\n");
         boolean isTsUrl = false;
