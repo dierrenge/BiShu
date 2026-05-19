@@ -46,6 +46,7 @@ import cn.cheng.biShu.MyApplication;
             String url = loadErrorInfo.loadEventInfo.uri.toString();
             File path = new File(url.substring(0, url.lastIndexOf("/")));
             if (!path.exists()) path.mkdirs();
+            // 有文件也不一定是对的，进入到此方法说明都有问题，故必须用默认视频切片写入
             try (BufferedInputStream bis = new BufferedInputStream(MyApplication.getContext().getAssets().open("default.mp4"));
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(url))) {
                 int len = 0;

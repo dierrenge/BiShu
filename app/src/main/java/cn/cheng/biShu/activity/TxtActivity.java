@@ -333,6 +333,53 @@ public class TxtActivity extends AppCompatActivity {
                         // 翻页控制
                         new Handler().postDelayed(() -> MyApplication.turnThePage = false, 1500);
                         setNextPosition();
+                    } else if (message.what == 1) {
+                        positionBean.setSize(n_content.getCharNum());
+                        CommonUtils.readNextPage(lines, positionBean);
+                        n_content.setText(positionBean.getTxt());
+                        if (!otherFlag) {
+                            read();
+                        }
+                    } else if (message.what == 2) {
+                        positionBean.setSize(n_content.getCharNum());
+                        CommonUtils.readPreviousPage(lines, positionBean, msgHandler);
+                        n_content.setText(span(positionBean.getTxt()));
+                        // 重置第一页
+                        if (positionBean.getStartLine() == 0 && positionBean.getStartNum() == 0) {
+                            positionBean.setEndLine(-1);
+                            positionBean.setEndNum(0);
+                            setNextPosition();
+                        } else {
+                            Message message3 = handler.obtainMessage();
+                            message3.what = 3;
+                            handler.sendMessage(message3);
+                        }
+                    } else if (message.what == 3) {
+                        // 获取当前显示最后一行内容
+                        Layout layout = n_content.getLayout();
+                        int i = n_content.getLineNum();
+                        int lineStart = layout.getLineStart(i);
+                        int lineEnd = layout.getLineEnd(i);
+                        String lastTxt = n_content.getText().subSequence(lineStart, lineEnd).toString();
+                        // 但不是实际最后一行时
+                        if (!positionBean.getTxt().endsWith(lastTxt)) {
+                            lineStart = layout.getLineStart(0);
+                            lineEnd = layout.getLineEnd(0);
+                            String firstTxt = n_content.getText().subSequence(lineStart, lineEnd).toString();
+                            positionBean.setTxt(positionBean.getTxt().substring(firstTxt.length()));
+                            int num = positionBean.getStartNum();
+                            int line = positionBean.getStartLine();
+                            if (lines.get(line).length() > firstTxt.length() && lines.get(line).contains(firstTxt)) {
+                                positionBean.setStartNum(num + firstTxt.length());
+                            } else {
+                                positionBean.setStartLine(line + 1);
+                            }
+                        }
+                        n_content.setText(positionBean.getTxt());
+
+                        if (!otherFlag) {
+                            read();
+                        }
                     }
                     return false;
                 }
@@ -364,11 +411,7 @@ public class TxtActivity extends AppCompatActivity {
             positionBean.setSize(maxWordCount); // 字母i  24行、每行55个
             CommonUtils.readNextPageDef(lines, positionBean);
             n_content.setText(span(positionBean.getTxt()));
-            new Handler().post(() -> {
-                /*if (init == 0) {
-                    init = 1;
-                    n_content.setMaxLines(n_content.getLineNum() + 1);
-                }*/
+            /*new Handler().post(() -> {
                 positionBean.setSize(n_content.getCharNum());
                 CommonUtils.readNextPage(lines, positionBean);
                 n_content.setText(positionBean.getTxt());
@@ -376,7 +419,10 @@ public class TxtActivity extends AppCompatActivity {
                 if (!otherFlag) {
                     read();
                 }
-            });
+            });*/
+            Message message = handler.obtainMessage();
+            message.what = 1;
+            handler.sendMessage(message);
         }
     }
 
@@ -388,7 +434,7 @@ public class TxtActivity extends AppCompatActivity {
             positionBean.setSize(maxWordCount); // 字母i  24行、每行55个
             CommonUtils.readPreviousPageDef(lines, positionBean);
             n_content.setText(span(positionBean.getTxt()));
-            new Handler().post(() -> {
+            /*new Handler().post(() -> {
                 positionBean.setSize(n_content.getCharNum());
                 CommonUtils.readPreviousPage(lines, positionBean, msgHandler);
                 n_content.setText(span(positionBean.getTxt()));
@@ -426,7 +472,14 @@ public class TxtActivity extends AppCompatActivity {
                         }
                     });
                 }
-            });
+            });*/
+            Message message = handler.obtainMessage();
+            message.what = 2;
+            handler.sendMessage(message);
+        } else { // 重置第一页
+            positionBean.setEndLine(-1);
+            positionBean.setEndNum(0);
+            setNextPosition();
         }
     }
 
