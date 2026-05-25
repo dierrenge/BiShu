@@ -270,16 +270,6 @@ public class M3u8DownLoader {
         else urlContent = content;
         if (!urlContent.toString().contains("#EXTM3U"))
             throw new M3u8Exception(DOWNLOADURL + "不是m3u8链接");
-        // 保留原m3u8文本
-        new Thread(() -> {
-            File dir = new File(supDir);
-            if (!dir.exists()) dir.mkdirs();
-            String absolutePath = supDir + "/" + fileName + ".m3u8原";
-            File file = new File(absolutePath);
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-                bw.write(urlContent.toString());
-            } catch (Exception ignored) {}
-        }).start();
         // 解析整理ts链接和加密key链接
         String[] split = urlContent.toString().split("\\n");
         boolean isTsUrl = false;
@@ -288,6 +278,7 @@ public class M3u8DownLoader {
         String relativeUrl = url.substring(0, url.lastIndexOf("/") + 1);
         String relativeUrl2 = DOWNLOADURL.split("//")[0] + "//" + new URI(DOWNLOADURL).getHost();
         int discontinuityNum = 0;
+        ArrayList<String> m3u8LinesO = new ArrayList<>(); // 记录原文本内容
         for (int i = 0; i < split.length; i++) {
             String s = split[i];
             //如果含有此字段，则获取加密算法以及获取密钥的链接
@@ -311,6 +302,7 @@ public class M3u8DownLoader {
                 // 保存m3u8文本行
                 if (!isTsUrl) {
                     m3u8Lines.add(s);
+                    m3u8LinesO.add(s);
                     if (s.contains("#EXTINF")) {
                         isTsUrl = true;
                     }
@@ -329,8 +321,10 @@ public class M3u8DownLoader {
                     n++;
                     if (s.endsWith(".ts")) {
                         m3u8Lines.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz");
+                        m3u8LinesO.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz");
                     } else {
                         m3u8Lines.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz2");
+                        m3u8LinesO.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz2");
                     }
                     isTsUrl = false;
                 }
@@ -344,14 +338,17 @@ public class M3u8DownLoader {
                 dir.mkdirs();
             }
             String absolutePath = supDir + "/" + fileName + ".m3u8";
-            File file = new File(absolutePath);
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            String absolutePathO = absolutePath + "原";
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(absolutePath));
+            BufferedWriter bwO = new BufferedWriter(new FileWriter(absolutePathO))) {
                 StringBuffer buffer = new StringBuffer();
                 for (String line : m3u8Lines) {
                     buffer.append(line + "\n");
                 }
                 bw.write(buffer.toString());
                 bw.flush();
+                bwO.write(buffer.toString());
+                bwO.flush();
                 notificationBean.setAbsolutePath(absolutePath);
             } catch (Exception e) {
                 e.printStackTrace();

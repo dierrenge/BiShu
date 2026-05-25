@@ -283,6 +283,7 @@ public class DownloadActivity extends AppCompatActivity {
                                 @Override
                                 public void delete() {
                                     dialog.dismiss();
+                                    clearUrls.clear();
                                     clearUrls.add(fileRecordUrl);
                                     menu_clear.callOnClick();
                                     setScrollEnabled(true);

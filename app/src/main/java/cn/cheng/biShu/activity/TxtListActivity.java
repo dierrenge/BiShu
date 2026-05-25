@@ -322,6 +322,7 @@ public class TxtListActivity extends AppCompatActivity {
                                 @Override
                                 public void delete() {
                                     dialog.dismiss();
+                                    clearUrls.clear();
                                     clearUrls.add(txtUrl);
                                     menu_clear.callOnClick();
                                     setScrollEnabled(true);

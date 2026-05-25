@@ -303,6 +303,7 @@ public class LikeActivity extends AppCompatActivity {
                             @Override
                             public void delete() {
                                 dialog.dismiss();
+                                clearUrls.clear();
                                 clearUrls.add(likeUrl);
                                 menu_clear.callOnClick();
                                 setScrollEnabled(true);

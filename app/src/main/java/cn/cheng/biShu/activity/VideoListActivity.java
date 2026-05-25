@@ -320,6 +320,7 @@ public class VideoListActivity extends AppCompatActivity {
                                 @Override
                                 public void delete() {
                                     dialog.dismiss();
+                                    clearUrls.clear();
                                     clearUrls.add(videoUrl);
                                     menu_clear.callOnClick();
                                     setScrollEnabled(true);
