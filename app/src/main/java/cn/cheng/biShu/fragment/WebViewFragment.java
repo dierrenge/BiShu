@@ -968,6 +968,7 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (sysBean.isFlagSpider()) return; // 爬虫调试时允许webview后台运行
         // 激活webView
         webView.onResume();
         webView.resumeTimers();
@@ -982,6 +983,7 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        if (sysBean.isFlagSpider()) return; // 爬虫调试时允许webview后台运行
         // 暂停webView
         webView.onPause();
         webView.pauseTimers();
