@@ -33,6 +33,7 @@ public class SettingDialog extends Dialog {
     private CheckBox gifTip;
     private CheckBox htmlTip;
     private CheckBox logTip;
+    private CheckBox spiderTip;
     private EditText settingInput;
     private Button settingInputBtn;
     private View view_holder;
@@ -96,6 +97,14 @@ public class SettingDialog extends Dialog {
                     if (callListener != null) callListener.updateSetting();
                 }
             });
+            spiderTip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    sysBean.setFlagSpider(spiderTip.isChecked());
+                    CommonUtils.writeObjectIntoLocal(sysBean, "SysSetting");
+                    if (callListener != null) callListener.updateSetting();
+                }
+            });
         } else {
             findViewById(R.id.settingCard2).setVisibility(View.VISIBLE);
             findViewById(R.id.settingCard1).setVisibility(View.GONE);
@@ -139,12 +148,15 @@ public class SettingDialog extends Dialog {
             boolean flagGif = sysBean.isFlagGif();
             boolean flagHtml = sysBean.isFlagHtml();
             boolean flagLog  = sysBean.isFlagLog();
+            boolean flagSpider  = sysBean.isFlagSpider();
             gifTip = findViewById(R.id.gifTip);
             htmlTip = findViewById(R.id.htmlTip);
             logTip = findViewById(R.id.logTip);
+            spiderTip = findViewById(R.id.spiderTip);
             if (gifTip != null) gifTip.setChecked(flagGif);
             if (htmlTip != null) htmlTip.setChecked(flagHtml);
             if (logTip != null) logTip.setChecked(flagLog);
+            if (spiderTip != null) spiderTip.setChecked(flagSpider);
         }
     }
 

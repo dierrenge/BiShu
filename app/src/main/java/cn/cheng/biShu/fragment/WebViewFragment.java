@@ -51,8 +51,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -636,31 +638,49 @@ public class WebViewFragment extends Fragment {
                 });
             }
 
-            // 爬虫
-            if (false) {
+            // 爬虫 当前只针对指定网站 https://m.2pzw.com
+            if (sysBean.isFlagSpider()) {
+                final String flag = "&&&%%%000%%%&&&&";
                 webView.evaluateJavascript("(function() { " +
                         "var v_domArr = document.getElementsByClassName('TxtContent')[0].getElementsByTagName('p');" +
-                        "var txt = document.getElementsByClassName('sh1')[0].innerText;" +
-                        "for(var i = 0; i < v_domArr.length; i++) {txt += v_domArr[i].innerText + '\\n';}" +
-                        "return txt;" +
+                        "var title = document.getElementsByClassName('sau FCol')[0].getElementsByTagName('span')[0].innerText;" +
+                        "var txt = document.getElementsByClassName('sh1')[0].innerText + '\\n';" +
+                        "for(var i = 0; i < v_domArr.length; i++) {txt += '\\n' + v_domArr[i].innerHTML.split('<br')[0];}" +
+                        "return title + '" + flag + "' + txt;" +
                         " })();", new ValueCallback<String>() {
                     @Override
-                    public void onReceiveValue(String txt) {
-                        // 1、存盘
-
-                        // 2、跳转下一页
-                        autoJump();
+                    public void onReceiveValue(String value) {
+                        if (value == null || "null".equals(value)) return;
+                        new Handler().postDelayed(() -> {
+                            String txt = value;
+                            txt = txt.substring(1, txt.length() - 1);
+                            if (!txt.contains(flag)) return;
+                            String title = txt.split(flag)[0];
+                            txt = txt.split(flag)[1].replace("\\n", "\n") + "\n";
+                            // 1、存盘
+                            autoSave(txt, title);
+                            // 2、跳转下一页
+                            autoJump();
+                        }, 400);
                     }
                 });
             }
+        }
+
+        private void autoSave(String txt, String title) {
+            File file = CommonUtils.getFile("BiShu", title + ".txt", "");
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+                bw.write(txt);
+                bw.newLine();
+            } catch (Exception ignored) {}
         }
 
         private void autoJump() {
             webView.evaluateJavascript(
                     "(function(){" +
                             "function getDom(txt) {return document.evaluate('//a[normalize-space(text())=\"'+txt+'\"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;}" +
-                            "var v_dom = getDom('下一页'); if (v_dom.href) {v_dom.click();}" +
-                            "else {var v_dom2 = getDom('下一章'); if (v_dom2.href) {v_dom2.click();}}" +
+                            "var v_dom = getDom('下一页') == null ? getDom('下—页') : getDom('下一页'); if (v_dom && v_dom.href) {v_dom.click();}" +
+                            "else {var v_dom2 = getDom('下一章') == null ? getDom('下—章') : getDom('下一章'); if (v_dom2 && v_dom2.href) {v_dom2.click();}}" +
                             "})();",
                     null
             );

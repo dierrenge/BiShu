@@ -99,6 +99,30 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/blackGray"
+                    android:text="爬虫调试"
+                    android:textSize="16dp" />
+
+                <CheckBox
+                    android:id="@+id/spiderTip"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:button="@drawable/btn_radio"
+                    android:checked="false"/>
+
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

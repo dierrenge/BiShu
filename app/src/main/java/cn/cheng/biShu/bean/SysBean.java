@@ -11,6 +11,9 @@ public class SysBean {
     // 是否开启打印网页日志
     private boolean flagLog;
 
+    // 是否开启爬虫
+    private boolean flagSpider;
+
     public boolean isFlagGif() {
         return flagGif;
     }
@@ -33,5 +36,13 @@ public class SysBean {
 
     public void setFlagLog(boolean flagLog) {
         this.flagLog = flagLog;
+    }
+
+    public boolean isFlagSpider() {
+        return flagSpider;
+    }
+
+    public void setFlagSpider(boolean flagSpider) {
+        this.flagSpider = flagSpider;
     }
 }

@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             sysBean.setFlagGif(true);
             sysBean.setFlagHtml(false);
             sysBean.setFlagLog(false);
+            sysBean.setFlagSpider(false);
             CommonUtils.writeObjectIntoLocal(sysBean, "SysSetting");
 
             init();
