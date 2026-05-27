@@ -103,6 +103,8 @@ public class WebViewFragment extends Fragment {
     private SysBean sysBean; // 系统参数
     private boolean onCreated; // 是否已创建
 
+    private String chapter; // 爬虫章节名
+
     // 无参构造函数
     public WebViewFragment() {
     }
@@ -642,21 +644,27 @@ public class WebViewFragment extends Fragment {
             if (sysBean.isFlagSpider()) {
                 final String flag = "&&&%%%000%%%&&&&";
                 webView.evaluateJavascript("(function() { " +
-                        "var v_domArr = document.getElementsByClassName('TxtContent')[0].getElementsByTagName('p');" +
                         "var title = document.getElementsByClassName('sau FCol')[0].getElementsByTagName('span')[0].innerText;" +
-                        "var txt = document.getElementsByClassName('sh1')[0].innerText + '\\n';" +
-                        "for(var i = 0; i < v_domArr.length; i++) {txt += '\\n' + v_domArr[i].innerHTML.split('<br')[0];}" +
-                        "return title + '" + flag + "' + txt;" +
+                        "var chapter = document.getElementsByClassName('sh1')[0].innerText;" +
+                        "var txtContent = document.getElementsByClassName('TxtContent')[0].innerText;" +
+                        "txtContent = txtContent.split('本章没完')[0];" +
+                        "txtContent = txtContent.split('羽民提醒您')[0];" +
+                        "return title + '" + flag + "' + chapter + '" + flag + "' + txtContent;" +
                         " })();", new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String value) {
                         if (value == null || "null".equals(value)) return;
+                        value = value.substring(1, value.length() - 1);
+                        if (!value.contains(flag)) return;
+                        String title = value.split(flag)[0].replace("\\n", "\n");
+                        String chapter0 = value.split(flag)[1].replace("\\n", "\n");
+                        String txt0 = value.split(flag)[2].replace("\\n", "\n") + "\n";
+                        if (!chapter0.equals(chapter)) {
+                            chapter = chapter0;
+                            txt0 = chapter + "\n\n" + txt0;
+                        }
+                        String txt = txt0;
                         new Handler().postDelayed(() -> {
-                            String txt = value;
-                            txt = txt.substring(1, txt.length() - 1);
-                            if (!txt.contains(flag)) return;
-                            String title = txt.split(flag)[0];
-                            txt = txt.split(flag)[1].replace("\\n", "\n") + "\n";
                             // 1、存盘
                             autoSave(txt, title);
                             // 2、跳转下一页
@@ -695,6 +703,10 @@ public class WebViewFragment extends Fragment {
 
             // 广告过滤图片、js等资源文件
             if (isAd(url)) {
+                return AdBlocker.createEmptyResource();
+            }
+            // 爬虫调试 禁止跨域跳转
+            if (sysBean.isFlagSpider() && !CommonUtils.getUrlDomain(MyApplication.jumpUrl).equals(CommonUtils.getUrlDomain(url))) {
                 return AdBlocker.createEmptyResource();
             }
 
@@ -776,6 +788,10 @@ public class WebViewFragment extends Fragment {
             }
             // 广告过滤
             if (isAd(url)) {
+                return true;
+            }
+            // 爬虫调试 禁止跨域跳转
+            if (sysBean.isFlagSpider() && !CommonUtils.getUrlDomain(MyApplication.jumpUrl).equals(CommonUtils.getUrlDomain(url))) {
                 return true;
             }
 

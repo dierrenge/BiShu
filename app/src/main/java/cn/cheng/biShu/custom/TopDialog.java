@@ -5,9 +5,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 
@@ -23,15 +26,20 @@ public class TopDialog extends Dialog {
     private Button readBtn;
     private Button readSetBtn;
     private Button powerSetBtn;
+    private Button replaceBtn;
+    private EditText replaceOld;
+    private EditText replaceNew;
+    private ImageButton replaceBtnBtn;
     private TouchListener touchListener;
     private boolean flagRead;
+    private boolean flagReplace;
 
     public TopDialog(@NonNull Context context, boolean flagRead) {
         super(context, R.style.dialog);
         this.flagRead = flagRead;
     }
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +60,10 @@ public class TopDialog extends Dialog {
         }
         readSetBtn = findViewById(R.id.readSetBtn);
         powerSetBtn = findViewById(R.id.powerSetBtn);
+        replaceBtn = findViewById(R.id.replaceBtn);
+        replaceOld = findViewById(R.id.replaceOld);
+        replaceNew = findViewById(R.id.replaceNew);
+        replaceBtnBtn = findViewById(R.id.replaceBtnBtn);
 
         // view窗口显示设置
         Window window = this.getWindow();
@@ -100,6 +112,25 @@ public class TopDialog extends Dialog {
                 }
             }
         });
+        replaceBtn.setOnTouchListener(new FilterLongDownSlideTouchListener() {
+            @Override
+            public void upEvent() {
+                flagReplace = !flagReplace;
+                if (flagReplace) {
+                    findViewById(R.id.readDialogB).setVisibility(View.GONE);
+                    findViewById(R.id.replaceDialogB).setVisibility(View.VISIBLE);
+                    if (touchListener != null) touchListener.replace(null, null);
+                } else {
+                    findViewById(R.id.readDialogB).setVisibility(View.VISIBLE);
+                    findViewById(R.id.replaceDialogB).setVisibility(View.GONE);
+                }
+            }
+        });
+        replaceBtnBtn.setOnClickListener(view -> {
+            String oldTxt = replaceOld.getText().toString();
+            String newTxt = replaceNew.getText().toString();
+            if (touchListener != null) touchListener.replace(oldTxt, newTxt);
+        });
     }
 
     @Override
@@ -137,6 +168,8 @@ public class TopDialog extends Dialog {
         void readSet();
         // 省电策略
         void powerSet();
+        // 替换
+        void replace(String oldTxt, String newTxt);
     }
 
 }

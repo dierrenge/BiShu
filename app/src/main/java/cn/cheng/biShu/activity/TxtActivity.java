@@ -29,6 +29,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
@@ -233,6 +235,17 @@ public class TxtActivity extends AppCompatActivity {
                         } catch (Throwable e) {
                             MyToast.getInstance("设置失败！").show();
                             CommonUtils.saveLog("设置忽略电池优化:" + e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void replace(String oldTxt, String newTxt) {
+                        if (oldTxt == null && newTxt == null) {
+                            // 停止朗读服务
+                            TxtActivity.stopReadService();
+                        } else if (StringUtils.isNotEmpty(oldTxt) && StringUtils.isNotEmpty(newTxt)) {
+                            // 替换文本
+                            // 重新加载
                         }
                     }
                 });
