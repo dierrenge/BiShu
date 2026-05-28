@@ -661,7 +661,7 @@ public class WebViewFragment extends Fragment {
                         String txt0 = value.split(flag)[2].replace("\\n", "\n") + "\n";
                         if (!chapter0.equals(chapter)) {
                             chapter = chapter0;
-                            txt0 = chapter + "\n\n" + txt0;
+                            txt0 = chapter + "\n" + txt0;
                         }
                         String txt = txt0;
                         new Handler().postDelayed(() -> {
@@ -669,7 +669,7 @@ public class WebViewFragment extends Fragment {
                             autoSave(txt, title);
                             // 2、跳转下一页
                             autoJump();
-                        }, 400);
+                        }, 200);
                     }
                 });
             }

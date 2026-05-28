@@ -54,7 +54,7 @@ public class TxtActivity extends AppCompatActivity {
     private LinearLayout back;
     private Button n_change;
     private ReadView n_content;
-    private Handler msgHandler;
+    private Handler initHandler;
 
     String txtUrl = "";
     ArrayList<String> lines;
@@ -75,6 +75,9 @@ public class TxtActivity extends AppCompatActivity {
 
     // 打开方式 标记
     boolean otherFlag = false;
+
+    // 目录跳转标志
+    private String catalog;
 
     // 电话状态监听
     private TelephonyManager telephonyManager;
@@ -121,7 +124,7 @@ public class TxtActivity extends AppCompatActivity {
             }
             // CommonUtils.saveLog("打开方式-txt文件：" + txtUrl);
 
-            String catalog = intent.getStringExtra("catalog");
+            catalog = intent.getStringExtra("catalog");
             String title = txtUrl.substring(txtUrl.lastIndexOf("/") + 1);
             Bundle extras = intent.getExtras();
             if (extras != null) {
@@ -138,15 +141,54 @@ public class TxtActivity extends AppCompatActivity {
             }
             MyApplication.setTxtUrl(txtUrl);
 
+            // 初始化数据
+            initHandler = new Handler(new Handler.Callback() {
+                @Override
+                public boolean handleMessage(@NonNull Message message) {
+                    if (message.what == 0 || "replace".equals(message.obj + "")) {
+                        lines = new ArrayList<>();
+                        CommonUtils.readLines(txtUrl, lines);
+                        MyApplication.setNovelLines(txtUrl, lines);
+                    }
+                    if (message.what == 1 || "replace".equals(message.obj + "")) {
+                        if (catalog == null || "".equals(catalog)) {
+                            positionBean = CommonUtils.readObjectFromLocal(txtUrl, PositionBean.class);
+                        }
+                        if (positionBean == null) {
+                            positionBean = new PositionBean();
+                            positionBean.setEndLine(-1);
+                            positionBean.setEndNum(0);
+                            setNextPosition();
+                        } else {
+                            if ("catalog".equals(catalog)) {
+                                if (flagRead) {
+                                    stopReadService();
+                                    flagRead = true;
+                                }
+                                setNextPosition();
+                                catalog = null;
+                            } else {
+                                n_content.setText(positionBean.getTxt());
+                            }
+                        }
+                    }
+                    if ("replace".equals(message.obj + "")) {
+                        MyToast.getInstance("替换完成").show();
+                    }
+                    return false;
+                }
+            });
+
             // 读取内存中的文本行
             Map<String, ArrayList<String>> novelLinesMap = MyApplication.getNovelLinesMap();
             lines = novelLinesMap.get(txtUrl);
             if (lines == null || !flagRead) {
-                lines = new ArrayList<>();
-                new Thread(() -> {
-                    CommonUtils.readLines(txtUrl, lines);
-                    MyApplication.setNovelLines(txtUrl, lines);
-                }).start();
+                // lines = new ArrayList<>();
+                // new Thread(() -> {
+                //     CommonUtils.readLines(txtUrl, lines);
+                //     MyApplication.setNovelLines(txtUrl, lines);
+                // }).start();
+                initHandler.sendMessage(initHandler.obtainMessage(0));
             }
 
             // 设置书名
@@ -244,8 +286,19 @@ public class TxtActivity extends AppCompatActivity {
                             // 停止朗读服务
                             TxtActivity.stopReadService();
                         } else if (StringUtils.isNotEmpty(oldTxt) && StringUtils.isNotEmpty(newTxt)) {
-                            // 替换文本
-                            // 重新加载
+                            new Thread(() -> {
+                                // 替换文本
+                                CommonUtils.textFileReplace(txtUrl, oldTxt, newTxt);
+                                if (positionBean != null) {
+                                    String txt = positionBean.getTxt();
+                                    positionBean.setTxt(txt.replaceAll(oldTxt, newTxt));
+                                    CommonUtils.writeObjectIntoLocal(positionBean, txtUrl);
+                                }
+                                // 重新加载
+                                Message message = initHandler.obtainMessage();
+                                message.obj = "replace";
+                                initHandler.sendMessage(message);
+                            }).start();
                         }
                     }
                 });
@@ -304,19 +357,8 @@ public class TxtActivity extends AppCompatActivity {
                 }
             });
 
-            // 消息提示
-            msgHandler = new Handler(new Handler.Callback() {
-                @Override
-                public boolean handleMessage(@NonNull Message message) {
-                    if (message.what == 0) {
-                        MyToast.getInstance(message.obj + "").show();
-                    }
-                    return false;
-                }
-            });
-
             // 设置初始页面文本
-            new Handler().postDelayed(() -> {
+            /*new Handler().postDelayed(() -> {
                 if (catalog == null || "".equals(catalog)) {
                     positionBean = CommonUtils.readObjectFromLocal(txtUrl, PositionBean.class);
                 }
@@ -332,11 +374,13 @@ public class TxtActivity extends AppCompatActivity {
                             flagRead = true;
                         }
                         setNextPosition();
+                        catalog = null;
                     } else {
                         n_content.setText(positionBean.getTxt());
                     }
                 }
-            }, 400);
+            }, 400);*/
+            initHandler.sendMessage(initHandler.obtainMessage(1));
 
             // 朗读翻页
             handler = new Handler(new Handler.Callback() {
@@ -355,7 +399,7 @@ public class TxtActivity extends AppCompatActivity {
                         }
                     } else if (message.what == 2) {
                         positionBean.setSize(n_content.getCharNum());
-                        CommonUtils.readPreviousPage(lines, positionBean, msgHandler);
+                        CommonUtils.readPreviousPage(lines, positionBean);
                         n_content.setText(span(positionBean.getTxt()));
                         // 重置第一页
                         if (positionBean.getStartLine() == 0 && positionBean.getStartNum() == 0) {

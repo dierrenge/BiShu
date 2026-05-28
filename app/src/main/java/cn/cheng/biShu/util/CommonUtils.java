@@ -1215,7 +1215,7 @@ public class CommonUtils {
      * @param lines
      * @param positionBean
      */
-    public static void readPreviousPage(ArrayList<String> lines, PositionBean positionBean, Handler msgHandler) {
+    public static void readPreviousPage(ArrayList<String> lines, PositionBean positionBean) {
         try {
             int size = positionBean.getSize();
             int startLine = positionBean.getStartLine();
@@ -2228,5 +2228,24 @@ public class CommonUtils {
                 CommonUtils.saveLog2("添加文件异常：" + e.getMessage());
             }
         }).start();
+    }
+
+    // 文本文件文字替换
+    public static void textFileReplace(String txtUrl, String oldTxt, String newTxt) {
+        if (txtUrl == null || oldTxt == null || newTxt == null) return;
+        String tempTxtUrl = txtUrl + ".temp";
+        File inputFile = new File(txtUrl);
+        File tempFile = new File(tempTxtUrl);
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))) {
+            String line = null;
+            while((line = br.readLine()) != null) {
+                bw.write(line.replace(oldTxt, newTxt));
+                bw.newLine();
+            }
+        } catch (Exception ignored) {}
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            saveLog2("textFileReplace文件替换失败：" + txtUrl);
+        }
     }
 }
