@@ -21,6 +21,7 @@ import cn.cheng.biShu.R;
 import cn.cheng.biShu.bean.SysBean;
 import cn.cheng.biShu.util.AdBlocker;
 import cn.cheng.biShu.util.CommonUtils;
+import cn.cheng.biShu.util.SpiderLoader;
 
 /**
  * Created by YanGeCheng on 2023/4/2.
@@ -111,10 +112,16 @@ public class SettingDialog extends Dialog {
             settingInput = findViewById(R.id.settingInput);
             settingInputBtn = findViewById(R.id.settingInputBtn);
             view_holder = findViewById(R.id.view_holder_setting);
-            String hostInfo = AdBlocker.getHostInfo(activity);
-            settingInput.setText(hostInfo);
+            String info = "";
+            if ("input1".equals(type)) {
+                info = AdBlocker.getHostInfo(activity);
+            } else if ("input2".equals(type)) {
+                info = SpiderLoader.getSpiderSetInfo(activity);
+            }
+            settingInput.setText(info);
             settingInputBtn.setOnClickListener(v -> {
-                AdBlocker.updateHostInfo(activity, settingInput.getText().toString());
+                if ("input1".equals(type)) AdBlocker.updateHostInfo(activity, settingInput.getText().toString());
+                if ("input2".equals(type)) SpiderLoader.updateSpiderSetInfo(activity, settingInput.getText().toString());
                 dismiss();
                 if (callListener != null) callListener.updateSetting();
             });

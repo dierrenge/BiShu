@@ -63,11 +63,11 @@
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:textColor="@color/blackGray"
-                    android:text="网页源码"
+                    android:text="开发模式"
                     android:textSize="16dp" />
 
                 <CheckBox
-                    android:id="@+id/htmlTip"
+                    android:id="@+id/logTip"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:button="@drawable/btn_radio"
@@ -87,11 +87,11 @@
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:textColor="@color/blackGray"
-                    android:text="网页日志"
+                    android:text="打印源码"
                     android:textSize="16dp" />
 
                 <CheckBox
-                    android:id="@+id/logTip"
+                    android:id="@+id/htmlTip"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:button="@drawable/btn_radio"

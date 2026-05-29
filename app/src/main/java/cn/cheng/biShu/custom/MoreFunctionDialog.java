@@ -32,6 +32,7 @@ public class MoreFunctionDialog extends Dialog {
     private Button downloadMoreBtn;
     private Button settingMoreBtn;
     private Button settingAdBtn;
+    private Button spiderSetBtn;
     private CallListener callListener;
 
     public MoreFunctionDialog(@NonNull Context context) {
@@ -93,7 +94,18 @@ public class MoreFunctionDialog extends Dialog {
         });
         settingAdBtn = this.findViewById(R.id.settingAdBtn);
         settingAdBtn.setOnClickListener(view -> {
-            SettingDialog dialog = new SettingDialog((Activity) context, "input");
+            SettingDialog dialog = new SettingDialog((Activity) context, "input1");
+            dialog.setCallListener(new SettingDialog.CallListener() {
+                @Override
+                public void updateSetting() {
+                    callListener.updateSetting(2);
+                }
+            });
+            dialog.show();
+        });
+        spiderSetBtn = this.findViewById(R.id.spiderSetBtn);
+        spiderSetBtn.setOnClickListener(view -> {
+            SettingDialog dialog = new SettingDialog((Activity) context, "input2");
             dialog.setCallListener(new SettingDialog.CallListener() {
                 @Override
                 public void updateSetting() {

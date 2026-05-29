@@ -133,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
             // 设置默认配置
             SysBean sysBean = new SysBean();
             sysBean.setFlagGif(true);
-            sysBean.setFlagHtml(false);
             sysBean.setFlagLog(false);
+            sysBean.setFlagHtml(false);
             sysBean.setFlagSpider(false);
             CommonUtils.writeObjectIntoLocal(sysBean, "SysSetting");
 

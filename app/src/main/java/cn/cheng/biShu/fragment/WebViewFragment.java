@@ -55,6 +55,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import java.util.Map;
 import cn.cheng.biShu.MyApplication;
 import cn.cheng.biShu.R;
 import cn.cheng.biShu.bean.DownloadBean;
+import cn.cheng.biShu.bean.SpiderBean;
 import cn.cheng.biShu.bean.SysBean;
 import cn.cheng.biShu.custom.FeetDialog;
 import cn.cheng.biShu.custom.MyToast;
@@ -71,6 +73,7 @@ import cn.cheng.biShu.service.DownloadService;
 import cn.cheng.biShu.util.AdBlocker;
 import cn.cheng.biShu.util.AssetsReader;
 import cn.cheng.biShu.util.CommonUtils;
+import cn.cheng.biShu.util.SpiderLoader;
 
 public class WebViewFragment extends Fragment {
     private LinearLayout viewViewLayout;
@@ -299,6 +302,7 @@ public class WebViewFragment extends Fragment {
     // 初始化系统参数
     public void initSetting() {
         sysBean = CommonUtils.readObjectFromLocal("SysSetting", SysBean.class);
+        SpiderLoader.init(this.getActivity());
     }
 
     // 下载
@@ -580,6 +584,10 @@ public class WebViewFragment extends Fragment {
             url_stop.setVisibility(View.VISIBLE);
             // 添加超时检测（例如 60 秒）
             progressHandler.postDelayed(myRunnable, 60000);
+            // document.write多为广告注入，故禁用之
+            webView.evaluateJavascript("(function(){document.write=function(){};document.writeln=function(){};})();", null);
+            // 防止vConsole被删除
+            webView.evaluateJavascript("(function(){Object.defineProperty(window,'myTest',{configurable: false,writable: false});})();", null);
             super.onPageStarted(view, url, favicon);
         }
 
@@ -640,15 +648,24 @@ public class WebViewFragment extends Fragment {
                 });
             }
 
-            // 爬虫 当前只针对指定网站 https://m.2pzw.com
+            // 爬虫
             if (sysBean.isFlagSpider()) {
+                SpiderBean spiderSet = SpiderLoader.getSpiderSet(url);
+                if (spiderSet == null) return;
+                StringBuilder filter = new StringBuilder(spiderSet.getFilter());
+                if (!filter.toString().trim().isEmpty()) {
+                    String[] split = filter.toString().split("[ ]+");
+                    filter = new StringBuilder();
+                    for (String s : split) {
+                        filter.append("txtContent = txtContent.split('").append(s).append("')[0];");
+                    }
+                } else filter = new StringBuilder();
                 final String flag = "&&&%%%000%%%&&&&";
                 webView.evaluateJavascript("(function() { " +
-                        "var title = document.getElementsByClassName('sau FCol')[0].getElementsByTagName('span')[0].innerText;" +
-                        "var chapter = document.getElementsByClassName('sh1')[0].innerText;" +
-                        "var txtContent = document.getElementsByClassName('TxtContent')[0].innerText;" +
-                        "txtContent = txtContent.split('本章没完')[0];" +
-                        "txtContent = txtContent.split('羽民提醒您')[0];" +
+                        "var title = '';var titleDom = (document.getElementById('"+spiderSet.getTitle()+"') || document.getElementsByClassName('"+spiderSet.getTitle()+"')[0]); if(titleDom){title = titleDom.innerText;}else{title='"+spiderSet.getTitle()+"'} " + // 书名
+                        "var chapter = (document.getElementById('"+spiderSet.getChapter()+"') || document.getElementsByClassName('"+spiderSet.getChapter()+"')[0]).innerText;" + // 章节名
+                        "var txtContent = (document.getElementById('"+spiderSet.getTxtContent()+"') || document.getElementsByClassName('"+spiderSet.getTxtContent()+"')[0]).innerText;" + // 正文
+                        filter + // 过滤项
                         "return title + '" + flag + "' + chapter + '" + flag + "' + txtContent;" +
                         " })();", new ValueCallback<String>() {
                     @Override
@@ -658,7 +675,7 @@ public class WebViewFragment extends Fragment {
                         if (!value.contains(flag)) return;
                         String title = value.split(flag)[0].replace("\\n", "\n");
                         String chapter0 = value.split(flag)[1].replace("\\n", "\n");
-                        String txt0 = value.split(flag)[2].replace("\\n", "\n") + "\n";
+                        String txt0 = value.split(flag)[2].replace("\\n", "\n");
                         if (!chapter0.equals(chapter)) {
                             chapter = chapter0;
                             txt0 = chapter + "\n" + txt0;
@@ -669,10 +686,13 @@ public class WebViewFragment extends Fragment {
                             autoSave(txt, title);
                             // 2、跳转下一页
                             autoJump();
-                        }, 200);
+                        }, 100);
                     }
                 });
             }
+
+            // 开发者调试面板
+            if (sysBean.isFlagLog()) vConsole();
         }
 
         private void autoSave(String txt, String title) {
@@ -694,6 +714,27 @@ public class WebViewFragment extends Fragment {
             );
         }
 
+        private void vConsole() {
+            try (InputStream inputS = MyApplication.getContext().getAssets().open("vconsole.min.js")) {
+                byte[] buff = new byte[inputS.available()];
+                inputS.read(buff);
+                inputS.close();
+                String encode = Base64.encodeToString(buff, Base64.NO_WRAP);
+                webView.evaluateJavascript("(function() {" +
+                        "  var parent = document.getElementsByTagName('head').item(0);" +
+                        "  var script = document.createElement('script');" +
+                        "  script.type = 'text/javascript';" +
+                        "  script.innerHTML = window.atob('"+encode+"');" +
+                        "  parent.appendChild(script);" +
+                        "  setTimeout(function() {" +
+                        "      if (typeof MyTest !== 'undefined' && window.myTestInstance == null) {" +
+                        "          window.myTestInstance = new MyTest();" +
+                        "      }" +
+                        "  }, 400);" +
+                        "})();", null);
+            } catch (Exception ignored) {}
+        }
+
         // 网址 过滤
         @Nullable
         @Override
@@ -705,8 +746,8 @@ public class WebViewFragment extends Fragment {
             if (isAd(url)) {
                 return AdBlocker.createEmptyResource();
             }
-            // 爬虫调试 禁止跨域跳转
-            if (sysBean.isFlagSpider() && !CommonUtils.getUrlDomain(MyApplication.jumpUrl).equals(CommonUtils.getUrlDomain(url))) {
+            // 爬虫调试 禁止非HTML主文档
+            if (sysBean.isFlagSpider() && !request.isForMainFrame()) {
                 return AdBlocker.createEmptyResource();
             }
 
@@ -904,10 +945,6 @@ public class WebViewFragment extends Fragment {
 
         @Override
         public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-            if (sysBean.isFlagLog()) {
-                String message = consoleMessage.message();
-                CommonUtils.saveLog("\n" + MyApplication.jumpUrl + "\nconsole.log:" + message + "\n");
-            }
             super.onConsoleMessage(consoleMessage);
             return false;
         }

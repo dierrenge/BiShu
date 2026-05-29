@@ -690,10 +690,11 @@ public class CommonUtils {
 
     // 获取url中的一级域名
     public static String getUrlDomain(String url) {
+        if (url == null || !url.contains("//")) return null;
         String[] split = url.split("//");
         String domain = split[1].split("/")[0];
         if (domain.indexOf(".") != domain.lastIndexOf(".")) {
-            domain = domain.substring(domain.indexOf("."));
+            domain = domain.substring(domain.indexOf(".") + 1);
         }
         return domain;
     }

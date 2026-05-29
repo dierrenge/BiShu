@@ -8,7 +8,7 @@ public class SysBean {
     // 是否开启打印网页源码
     private boolean flagHtml;
 
-    // 是否开启打印网页日志
+    // 是否开启开发模式（控制台）
     private boolean flagLog;
 
     // 是否开启爬虫
