@@ -60,6 +60,7 @@ public class SpiderLoader {
                  BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(spiderSetFile))) {
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     bufferedWriter.write(line);
                     bufferedWriter.newLine();
                 }
@@ -76,6 +77,7 @@ public class SpiderLoader {
             String line;
             int num = 0;
             while ((line = bufferedReader.readLine()) != null) {
+                line = CommonUtils.removeBom(line);
                 if (line.trim().startsWith("https:") || line.trim().startsWith("http:")) {
                     num = 1;
                     SpiderBean spiderBean = new SpiderBean();
@@ -106,6 +108,7 @@ public class SpiderLoader {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(spiderSetFile))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
+                line = CommonUtils.removeBom(line);
                 buffer.append(line + "\n");
             }
         } catch (Exception ignored) {}

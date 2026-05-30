@@ -541,13 +541,19 @@ public class TxtActivity extends AppCompatActivity {
     }
 
     // 预设置文字时，设置文字不可见
+    @SuppressLint("ResourceAsColor")
     private SpannableStringBuilder span(String txt) {
         // 当某一行字数过多时会卡住，故超出默认长度时截取部分
         if (txt.length() > maxWordCount) {
             txt = txt.substring(0, maxWordCount);
         }
         SpannableStringBuilder span = new SpannableStringBuilder(txt);
-        span.setSpan(new ForegroundColorSpan(Color.TRANSPARENT), 0, txt.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        if ((n_content !=null && n_content.getText().toString().startsWith(positionBean.getTxt()))
+        || (positionBean.getTxt() != null && positionBean.getTxt().startsWith(n_content.getText().toString()))) {
+            span.setSpan(new ForegroundColorSpan(R.color.blackGray), 0, txt.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        } else {
+            span.setSpan(new ForegroundColorSpan(Color.TRANSPARENT), 0, txt.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        }
         return span;
     }
 

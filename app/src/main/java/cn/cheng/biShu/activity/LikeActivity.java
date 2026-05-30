@@ -516,6 +516,7 @@ public class LikeActivity extends AppCompatActivity {
                         try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                             String line = null;
                             while ((line = reader.readLine()) != null) {
+                                line = CommonUtils.removeBom(line);
                                 likeUrls.add(line);
                             }
                         } catch (IOException e) {

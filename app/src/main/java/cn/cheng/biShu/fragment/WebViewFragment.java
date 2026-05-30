@@ -652,7 +652,8 @@ public class WebViewFragment extends Fragment {
             if (sysBean.isFlagSpider()) {
                 SpiderBean spiderSet = SpiderLoader.getSpiderSet(url);
                 if (spiderSet == null) return;
-                StringBuilder filter = new StringBuilder(spiderSet.getFilter());
+                String f = spiderSet.getFilter();
+                StringBuilder filter = new StringBuilder(f == null ? "" : f);
                 if (!filter.toString().trim().isEmpty()) {
                     String[] split = filter.toString().split("[ ]+");
                     filter = new StringBuilder();

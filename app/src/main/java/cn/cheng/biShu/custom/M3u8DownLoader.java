@@ -172,8 +172,10 @@ public class M3u8DownLoader {
                 String line;
                 inputStream = httpURLConnection.getInputStream();
                 bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                while ((line = bufferedReader.readLine()) != null)
+                while ((line = bufferedReader.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     content.append(line).append("\n");
+                }
                 bufferedReader.close();
                 inputStream.close();
                 // System.out.println(content);

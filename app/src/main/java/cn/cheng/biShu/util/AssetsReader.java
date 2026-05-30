@@ -48,6 +48,7 @@ public class AssetsReader {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String line;
         while ((line = bufferedReader.readLine()) != null) {
+            line = CommonUtils.removeBom(line);
             if (!FILE.contains(line)) {
                 LIST.add(line);
             }
@@ -69,6 +70,7 @@ public class AssetsReader {
         String line;
         List<String> list = new ArrayList<>();
         while ((line = bufferedReader.readLine()) != null) {
+            line = CommonUtils.removeBom(line);
             if (!key.contains(line)) {
                 list.add(line);
             }

@@ -1063,6 +1063,7 @@ public class CommonUtils {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(code)))) {
                 String line;
                 while ((line = br.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     // 首行缩进两个字符
                     if (!line.startsWith(line.trim()) || "".equals(line.trim())) {
                         line = "\u3000\u3000" + line.trim();
@@ -1403,6 +1404,7 @@ public class CommonUtils {
                 try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                     String line = "";
                     while ((line = br.readLine()) != null) {
+                        line = CommonUtils.removeBom(line);
                         json.append(line);
                     }
                 }
@@ -1453,6 +1455,7 @@ public class CommonUtils {
                 try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                     String line = "";
                     while ((line = br.readLine()) != null) {
+                        line = CommonUtils.removeBom(line);
                         json.append(line);
                     }
                 }
@@ -1488,6 +1491,7 @@ public class CommonUtils {
                 try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                     String line = "";
                     while ((line = br.readLine()) != null) {
+                        line = CommonUtils.removeBom(line);
                         json = json + line;
                     }
                 }
@@ -1531,6 +1535,7 @@ public class CommonUtils {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line = "";
                 while ((line = br.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     json = json + line;
                 }
             }
@@ -1557,6 +1562,7 @@ public class CommonUtils {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line = "";
                 while ((line = br.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     json = json + line;
                 }
             }
@@ -1608,6 +1614,7 @@ public class CommonUtils {
             try (InputStream inputStream = httpURLConnection.getInputStream();
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
                 line = bufferedReader.readLine();
+                line = CommonUtils.removeBom(line);
                 if (StringUtils.isNotEmpty(line) && line.contains("#EXTM3U")) mimeType = "m3u8";
             } catch (Exception ignored) {}
         } catch (Throwable e) {
@@ -1681,6 +1688,7 @@ public class CommonUtils {
         try (BufferedReader br = new BufferedReader(new FileReader(m3u8))) {
             String line = "";
             while ((line = br.readLine()) != null) {
+                line = CommonUtils.removeBom(line);
                 if (line.contains(PhoneSysPath.getDownloadDir())) {
                     hlsDir = line.substring(0, line.lastIndexOf('/'));
                     break;
@@ -1701,6 +1709,7 @@ public class CommonUtils {
         if (file.exists()) {
             try(BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line = br.readLine();
+                line = CommonUtils.removeBom(line);
                 if (key.equals(line)) {
                     return true;
                 }
@@ -1742,6 +1751,7 @@ public class CommonUtils {
                     List<String> likes = new ArrayList<>();
                     String line = null;
                     while ((line = reader.readLine()) != null) {
+                        line = CommonUtils.removeBom(line);
                         likes.add(line);
                     }
                     if (likes.size() > 0 && likes.contains(MyApplication.jumpUrl)) {
@@ -1782,6 +1792,7 @@ public class CommonUtils {
                 if (hasFile) {
                     String line = null;
                     while ((line = reader.readLine()) != null) {
+                        line = CommonUtils.removeBom(line);
                         likes.add(line);
                     }
                 }
@@ -2241,6 +2252,7 @@ public class CommonUtils {
         BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))) {
             String line = null;
             while((line = br.readLine()) != null) {
+                line = CommonUtils.removeBom(line);
                 bw.write(line.replace(oldTxt, newTxt));
                 bw.newLine();
             }
@@ -2249,4 +2261,13 @@ public class CommonUtils {
             saveLog2("textFileReplace文件替换失败：" + txtUrl);
         }
     }
+
+    // 1. 手动移除字符串开头的 BOM 字符
+    public static String removeBom(String line) {
+        if (line != null && line.startsWith("\uFEFF")) {
+            line = line.substring(1);
+        }
+        return line;
+    }
+
 }

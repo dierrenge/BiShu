@@ -59,6 +59,7 @@ public class AdBlocker {
                  BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(hostFile))) {
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
+                    line = CommonUtils.removeBom(line);
                     bufferedWriter.write(line);
                     bufferedWriter.newLine();
                 }
@@ -74,6 +75,7 @@ public class AdBlocker {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains("/")) {
+                    line = CommonUtils.removeBom(line);
                     AD_URL.add(line);
                 } else {
                     AD_HOSTS.add(line);
@@ -89,6 +91,7 @@ public class AdBlocker {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(hostFile))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
+                line = CommonUtils.removeBom(line);
                 buffer.append(line + "\n");
             }
         } catch (Exception ignored) {}
