@@ -58,9 +58,11 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cn.cheng.biShu.MyApplication;
 import cn.cheng.biShu.R;
@@ -583,7 +585,7 @@ public class WebViewFragment extends Fragment {
             url_flush2.setVisibility(View.GONE);
             url_stop.setVisibility(View.VISIBLE);
             // 添加超时检测（例如 60 秒）
-            progressHandler.postDelayed(myRunnable, 60000);
+            progressHandler.postDelayed(myRunnable, 5000);
             // document.write多为广告注入，故禁用之（注释掉，发现好些网页本身会用这个）
             // webView.evaluateJavascript("(function(){document.write=function(){};document.writeln=function(){};})();", null);
             // 防止vConsole被删除
@@ -671,12 +673,21 @@ public class WebViewFragment extends Fragment {
                         " })();", new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String value) {
-                        if (value == null || "null".equals(value)) return;
+                        if (value == null || "null".equals(value)) {
+                            new Handler().postDelayed(() -> {
+                                jumpLoading();
+                            }, 3000);
+                            return;
+                        }
                         value = value.substring(1, value.length() - 1);
                         if (!value.contains(flag)) return;
-                        String title = value.split(flag)[0].replace("\\n", "\n");
-                        String chapter0 = value.split(flag)[1].replace("\\n", "\n");
-                        String txt0 = value.split(flag)[2].replace("\\n", "\n");
+                        String title = value.split(flag)[0].replace("\\n", "\n").replace("\n\n", "\n");
+                        String chapter0 = value.split(flag)[1].replace("\\n", "\n").replace("\n\n", "\n");
+                        String txt0 = value.split(flag)[2].replace("\\n", "\n").replace("\n\n", "\n");
+                        String[] lines = txt0.split("\n");
+                        if (lines[0].contains(chapter0.trim())) txt0 = Arrays.stream(lines).skip(1).collect(Collectors.joining("\n"));
+                        if (chapter0.startsWith(title.trim())) chapter0 = chapter0.replaceFirst(title.trim(), "");
+                        if (lines[0].contains(chapter0.trim())) txt0 = Arrays.stream(lines).skip(1).collect(Collectors.joining("\n"));
                         if (!chapter0.equals(chapter)) {
                             chapter = chapter0;
                             txt0 = chapter + "\n" + txt0;
