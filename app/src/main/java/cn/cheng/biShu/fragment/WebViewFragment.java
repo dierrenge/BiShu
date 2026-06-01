@@ -585,7 +585,7 @@ public class WebViewFragment extends Fragment {
             url_flush2.setVisibility(View.GONE);
             url_stop.setVisibility(View.VISIBLE);
             // 添加超时检测（例如 60 秒）
-            progressHandler.postDelayed(myRunnable, 5000);
+            progressHandler.postDelayed(myRunnable, 1000*60*3);
             // document.write多为广告注入，故禁用之（注释掉，发现好些网页本身会用这个）
             // webView.evaluateJavascript("(function(){document.write=function(){};document.writeln=function(){};})();", null);
             // 防止vConsole被删除
