@@ -619,7 +619,6 @@ public class TxtActivity extends AppCompatActivity {
                 // 朗读文本
                 String txt = positionBean != null ? positionBean.getTxt() : "";
                 Intent intentS = new Intent(this, ReadService.class);
-                try {txtActivity.stopService(intentS);} catch (Exception ignored) {}; // 防止重复朗读旧资源
                 intentS.putExtra("txtUrl", txtUrl);
                 intentS.putExtra("txt", txt);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
