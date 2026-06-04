@@ -386,11 +386,11 @@ public class TxtActivity extends AppCompatActivity {
             handler = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(@NonNull Message message) {
-                    if (message.what == 0 && txtUrl.equals((String) message.obj)) {
+                    /*if (message.what == 0 && txtUrl.equals((String) message.obj)) {
                         // 翻页控制
                         new Handler().postDelayed(() -> MyApplication.turnThePage = false, 1500);
                         setNextPosition();
-                    } else if (message.what == 1) {
+                    } else */if (message.what == 1) {
                         positionBean.setSize(n_content.getCharNum());
                         CommonUtils.readNextPage(lines, positionBean);
                         n_content.setText(positionBean.getTxt());
@@ -567,10 +567,13 @@ public class TxtActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String url = intent.getStringExtra("txtUrl");
-            Message message = handler.obtainMessage();
+            /*Message message = handler.obtainMessage();
             message.what = 0;
             message.obj = url;
-            handler.sendMessage(message);
+            handler.sendMessage(message);*/
+            // 翻页控制
+            new Handler().postDelayed(() -> MyApplication.turnThePage = false, 1500);
+            if (txtUrl.equals(url)) setNextPosition();
         }
 
     }

@@ -56,6 +56,12 @@ public class ReadService extends Service {
         String txtUrl = intent.getStringExtra("txtUrl");
         String txt = intent.getStringExtra("txt");
         if (StringUtils.isEmpty(txt)) return START_STICKY;
+        // 添加延迟确保旧资源完全释放
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // 朗读开始
         textToSpeech = new TextToSpeech(this, status -> {
             //判断是否转化成功
@@ -81,13 +87,13 @@ public class ReadService extends Service {
                     }
                     @Override
                     public void onDone(String s) {
+                        // 清除旧语音资源
+                        speechDestroy();
                         // 防止多翻页
                         long endTime = System.currentTimeMillis() - time;
                         if (txt.length() > 20 && endTime < 4000) return;
                         // 翻页控制
                         MyApplication.turnThePage = true;
-                        // 清除旧语音资源
-                        speechDestroy();
                         // 发送Action为com.example.communication.RECEIVER的广播
                         Intent intentReceiver = new Intent("com.example.communication.RECEIVER");
                         intentReceiver.putExtra("txtUrl", txtUrl);
@@ -96,6 +102,8 @@ public class ReadService extends Service {
                     @Override
                     public void onError(String s) {
                         CommonUtils.saveLog("-------onError:" + s);
+                        // 错误时也要清理资源
+                        speechDestroy();
                     }
                 });
                 // 在onInIt方法里直接调用tts的播报功能
