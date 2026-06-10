@@ -82,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
         // 注册权限请求的返回监听
         initFilesAccessLauncher();
 
+        setContentView(R.layout.activity_main);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
-
-        setContentView(R.layout.activity_main);
 
         new Handler().post(() -> {
             AssetsReader.init(this, "audioVideo.txt");

@@ -96,9 +96,9 @@ public class MapActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_map);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
-        setContentView(R.layout.activity_map);
         // 初始化地图设置
         initMap(savedInstanceState);
         // 初始化逆地理编码服务

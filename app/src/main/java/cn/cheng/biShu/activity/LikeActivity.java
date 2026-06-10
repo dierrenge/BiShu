@@ -92,10 +92,10 @@ public class LikeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_like);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_like);
         back = findViewById(R.id.like_back);
         like_t1 = findViewById(R.id.like_t1);
         like_t2 = findViewById(R.id.like_t2);
@@ -466,7 +466,7 @@ public class LikeActivity extends AppCompatActivity {
             @Override
             public boolean handleMessage(@NonNull Message message) {
                 if (message.what == 0) {
-                    if (likeUrls.size() > 0) {
+                    if (!likeUrls.isEmpty()) {
                         recyclerView.setVisibility(View.VISIBLE);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         layout.setVisibility(View.GONE);

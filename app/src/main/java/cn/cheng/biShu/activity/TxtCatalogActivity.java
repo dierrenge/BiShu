@@ -51,10 +51,10 @@ public class TxtCatalogActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_txt_catalog);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_txt_catalog);
 
         // 注册广播接收器
         IntentFilter filter = new IntentFilter("CLOSE_TC_ACTIVITY");

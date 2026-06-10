@@ -312,21 +312,22 @@ public class M3u8DownLoader {
                     //将ts片段链接加入set集合
                     if (s.startsWith("http://") || s.startsWith("https://")) {
                         tsList.add(s);
+                        m3u8LinesO.add(s);
                     } else {
                         if (s.startsWith("/")) {
                             tsList.add(relativeUrl2 + s);
+                            m3u8LinesO.add(relativeUrl2 + s);
                         } else {
                             tsList.add(relativeUrl + s);
+                            m3u8LinesO.add(relativeUrl + s);
                         }
                     }
                     //记录本地m3u8索引
                     n++;
                     if (s.endsWith(".ts")) {
                         m3u8Lines.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz");
-                        m3u8LinesO.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz");
                     } else {
                         m3u8Lines.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz2");
-                        m3u8LinesO.add(supDir + "/m3u8/" + fileName + "/" + n + ".xyz2");
                     }
                     isTsUrl = false;
                 }
@@ -343,13 +344,17 @@ public class M3u8DownLoader {
             String absolutePathO = absolutePath + "原";
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(absolutePath));
             BufferedWriter bwO = new BufferedWriter(new FileWriter(absolutePathO))) {
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 for (String line : m3u8Lines) {
                     buffer.append(line + "\n");
                 }
                 bw.write(buffer.toString());
                 bw.flush();
-                bwO.write(buffer.toString());
+                StringBuilder bufferO = new StringBuilder();
+                for (String line : m3u8LinesO) {
+                    bufferO.append(line + "\n");
+                }
+                bwO.write(bufferO.toString());
                 bwO.flush();
                 notificationBean.setAbsolutePath(absolutePath);
             } catch (Exception e) {

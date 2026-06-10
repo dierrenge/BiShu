@@ -90,10 +90,10 @@ public class TxtActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_txt);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_txt);
         txtActivity = this;
         try {
             // 动态注册广播接收器

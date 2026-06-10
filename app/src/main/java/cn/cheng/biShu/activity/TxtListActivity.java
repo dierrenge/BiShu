@@ -82,10 +82,10 @@ public class TxtListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_txt_list);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_txt_list);
         back = findViewById(R.id.txt_back);
         layout = findViewById(R.id.txt_bg);
         txt_file = findViewById(R.id.txt_file);
@@ -454,7 +454,7 @@ public class TxtListActivity extends AppCompatActivity {
             @Override
             public boolean handleMessage(@NonNull Message message) {
                 if (message.what == 0) {
-                    if (txtUrls.size() > 0) {
+                    if (!txtUrls.isEmpty()) {
                         recyclerView.setVisibility(View.VISIBLE);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         layout.setVisibility(View.GONE);

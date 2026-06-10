@@ -9,6 +9,8 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
 import java.lang.reflect.Method;
@@ -37,6 +39,36 @@ public class SysWindowUi {
      * @param noStateBarAndNavigationBar
      */
     public static void hideStatusNavigationBar(Activity activity, Boolean noStateBarAndNavigationBar) {
+        // 新增：Android 11+ 使用新 API
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Window window = activity.getWindow();
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                if (noStateBarAndNavigationBar) {
+                    // 隐藏状态栏和导航栏
+                    controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                    controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                } else {
+                    // 显示状态栏和导航栏
+                    controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_DEFAULT);
+                    }
+                    // 设置状态栏和导航栏图标为深色（适配浅色背景）
+                    controller.setSystemBarsAppearance(
+                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                    );
+                }
+                // 设置透明背景
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                window.setStatusBarColor(Color.TRANSPARENT);
+                window.setNavigationBarColor(Color.TRANSPARENT);
+                return; // 新系统直接返回，不执行旧代码
+            }
+        }
         int uiFlags;
         if (noStateBarAndNavigationBar) {
             uiFlags =
@@ -90,6 +122,64 @@ public class SysWindowUi {
      */
     public static void setStatusBarNavigationBarStyle(Activity activity, int style) {
         if (activity == null || style == 0) return;
+        // 新增：Android 11+ 使用新 API
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Window window = activity.getWindow();
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                switch (style) {
+                    case NO_STATE__NO_STATE:
+                        // 正常模式：显示所有系统栏
+                        controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_DEFAULT);
+                        }
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                        window.setStatusBarColor(Color.TRANSPARENT);
+                        // 设置状态栏和导航栏图标为深色（适配浅色背景）
+                        controller.setSystemBarsAppearance(
+                                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                                        WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                                        WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                        );
+                        break;
+
+                    case NO_STATE__NO_NAVIGATION:
+                        // 完全隐藏系统栏
+                        controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                        controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                        // 不再使用 FLAG_TRANSLUCENT_*，直接设置透明色
+                        window.setStatusBarColor(Color.TRANSPARENT);
+                        window.setNavigationBarColor(Color.TRANSPARENT);
+                        break;
+
+                    case IMMERSIVE_STATE__IMMERSIVE_NAVIGATION:
+                        // 沉浸式：状态栏透明，导航栏沉浸
+                        controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                        controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                        // 设置窗口占用刘海区
+                        WindowManager.LayoutParams lp = window.getAttributes();
+                        lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                        window.setAttributes(lp);
+                        // 使用 setColor 替代 FLAG_TRANSLUCENT_*
+                        window.setStatusBarColor(Color.TRANSPARENT);
+                        window.setNavigationBarColor(Color.TRANSPARENT);
+                        break;
+
+                    case NO_STATE__IMMERSIVE_NAVIGATION:
+                        // 隐藏状态栏，沉浸式导航栏
+                        controller.hide(WindowInsets.Type.statusBars());
+                        controller.show(WindowInsets.Type.navigationBars());
+                        controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                        // 使用 setColor 替代 FLAG_TRANSLUCENT_*
+                        window.setStatusBarColor(Color.TRANSPARENT);
+                        window.setNavigationBarColor(Color.TRANSPARENT);
+                        break;
+                }
+                return; // 新系统直接返回，不执行旧代码
+            }
+        }
         Window window = activity.getWindow();
         if (style == NO_STATE__NO_STATE) {
             int uiFlags = View.SYSTEM_UI_FLAG_VISIBLE // 状态栏和Activity共存，Activity不全屏显示。也就是应用平常的显示画面

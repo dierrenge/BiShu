@@ -91,10 +91,10 @@ public class DownloadActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_download);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_download);
         layout = findViewById(R.id.download_bg);
         back = findViewById(R.id.download_back);
         download_list_head = findViewById(R.id.download_list_head);
@@ -530,7 +530,7 @@ public class DownloadActivity extends AppCompatActivity {
             @Override
             public boolean handleMessage(@NonNull Message message) {
                 if (message.what == 0) {
-                    if (fileUrls.size() > 0) {
+                    if (!fileUrls.isEmpty()) {
                         recyclerView.setVisibility(View.VISIBLE);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         layout.setVisibility(View.GONE);
@@ -653,9 +653,10 @@ public class DownloadActivity extends AppCompatActivity {
     };
 
     // 获取下载进度
+    @SuppressLint("DefaultLocale")
     private String getProcess(NotificationBean bean) {
         float process = 0;
-        if (bean.getTsList() != null && bean.getTsList().size() > 0) {
+        if (bean.getTsList() != null && !bean.getTsList().isEmpty()) {
             process = CommonUtils.getPercentage(bean.getHlsFinishedCount(), bean.getTsList().size());
         } else if (bean.getTotalSize() > 0) {
             process = CommonUtils.getPercentage(bean.getBytesum(), bean.getTotalSize());

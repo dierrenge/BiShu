@@ -17,6 +17,10 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
@@ -38,6 +42,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -76,6 +81,7 @@ import cn.cheng.biShu.util.AdBlocker;
 import cn.cheng.biShu.util.AssetsReader;
 import cn.cheng.biShu.util.CommonUtils;
 import cn.cheng.biShu.util.SpiderLoader;
+import cn.cheng.biShu.util.SysWindowUi;
 
 public class WebViewFragment extends Fragment {
     private LinearLayout viewViewLayout;
@@ -109,6 +115,10 @@ public class WebViewFragment extends Fragment {
     private boolean onCreated; // 是否已创建
 
     private String chapter; // 爬虫章节名
+
+    private RelativeLayout rootView; // 根布局引用
+
+    private View activityRootView; // Activity的根布局
 
     // 无参构造函数
     public WebViewFragment() {
@@ -158,6 +168,10 @@ public class WebViewFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_webview, container, false);
         progressHandler = new Handler();
+        rootView = (RelativeLayout) view;
+        if (getActivity() != null) {
+            activityRootView = getActivity().findViewById(android.R.id.content);
+        }
         viewViewLayout = view.findViewById(R.id.viewViewLayout);
         url_box2 = view.findViewById(R.id.url_box2);
         url_like2 = view.findViewById(R.id.url_like2);
@@ -854,9 +868,9 @@ public class WebViewFragment extends Fragment {
             // String cookies = CookieManager.getInstance().getCookie(url);
             // CommonUtils.saveLog("\n==cookies:" + cookies + "\n" + url + "\n");
 
-            // 仅处理用户触发的 非重定向 主框架请求
+            // 仅处理用户触发的 非重定向 主框架请求 (有很多非手动触发但也正常的跳转，故将request.hasGesture()去除)
             if ((request.getRequestHeaders() == null || request.getRequestHeaders().get("Referer") == null)
-                    && !request.isRedirect() && request.isForMainFrame() && request.hasGesture() && flag) {
+                    && !request.isRedirect() && request.isForMainFrame() /*&& request.hasGesture()*/ && flag) {
                 if (callListener != null) {
                     // 暂停webView
                     // new Handler().postDelayed(view::stopLoading, 150);// 中止当前网络加载(延时 保证cookie等数据处理完毕)
@@ -900,6 +914,7 @@ public class WebViewFragment extends Fragment {
         @Override
         public void onShowCustomView(View view, CustomViewCallback callback) {
             callListener.onEnterFullScreen(view, callback);
+            setFullScreen(true);
             // 如果一个视图已经存在，那么立刻终止并新建一个
             if (xCustomView != null) {
                 callback.onCustomViewHidden();
@@ -925,6 +940,7 @@ public class WebViewFragment extends Fragment {
             video_fullView.setVisibility(View.GONE);
             xCustomViewCallback.onCustomViewHidden();
             viewViewLayout.setVisibility(View.VISIBLE);
+            setFullScreen(false);
             dialogFlag = false;
         }
 
@@ -1028,6 +1044,95 @@ public class WebViewFragment extends Fragment {
      */
     public void hideCustomView() {
         xwebchromeclient.onHideCustomView();
+    }
+
+    /**
+     * 暂停所有视频播放
+     */
+    public void pauseMediaPlayback() {
+        try {
+            if (webView == null || getActivity() == null || getActivity().isFinishing() || isDetached()) {
+                return;
+            }
+        } catch (Exception e) {
+            return;
+        }
+        try {
+            webView.evaluateJavascript("(function() {" +
+                    "var videos = document.querySelectorAll('video');" +
+                    "for(var i=0; i<videos.length; i++) {" +
+                    "    if(!videos[i].paused) { videos[i].pause(); }" +
+                    "}" +
+                    "var audios = document.querySelectorAll('audio');" +
+                    "for(var i=0; i<audios.length; i++) {" +
+                    "    if(!audios[i].paused) { audios[i].pause(); }" +
+                    "}" +
+                    /*"var frames = document.getElementsByTagName('iframe');" +
+                    "for(var i=0; i<frames.length; i++) {" +
+                    "    try {" +
+                    "        frames[i].src = frames[i].src;" + // 强制停止所有媒体播放（适用于跨域情况） 但是会导致重新加载网页返回需要点击多次
+                    "    } catch(e) {}" +
+                    "}" +*/
+                    "})();", null);
+            webView.onPause();
+            webView.pauseTimers();
+        } catch (Exception e) {
+            CommonUtils.saveLog("pauseMediaPlayback error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 设置全屏模式（兼容 Android 15 / SDK 35）
+     * @param isFullScreen 是否进入全屏
+     */
+    private void setFullScreen(boolean isFullScreen) {
+        if (getActivity() == null) return;
+
+        Window window = getActivity().getWindow();
+
+        if (isFullScreen) {
+            // 禁用 fitsSystemWindows，让布局真正占满全屏
+            if (activityRootView != null) {
+                activityRootView.setFitsSystemWindows(false);
+            }
+            if (rootView != null) {
+                rootView.setFitsSystemWindows(false);
+            }
+
+            SysWindowUi.setStatusBarNavigationBarStyle(getActivity(), SysWindowUi.NO_STATE__NO_NAVIGATION);
+
+            // 添加全屏标志位
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        } else {
+            // 恢复 fitsSystemWindows，让布局避开系统栏
+            if (activityRootView != null) {
+                activityRootView.setFitsSystemWindows(true);
+            }
+            if (rootView != null) {
+                rootView.setFitsSystemWindows(true);
+            }
+
+            SysWindowUi.setStatusBarNavigationBarStyle(getActivity(), SysWindowUi.NO_STATE__NO_STATE);
+
+            // 移除全屏标志位
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+            // 延迟刷新布局（给系统时间处理UI变化）
+            if (rootView != null) {
+                rootView.postDelayed(() -> {
+                    rootView.requestLayout();
+                    rootView.invalidate();
+                }, 50);
+            }
+            if (activityRootView != null) {
+                activityRootView.postDelayed(() -> {
+                    activityRootView.requestLayout();
+                    activityRootView.invalidate();
+                }, 50);
+            }
+        }
     }
 
     @Override

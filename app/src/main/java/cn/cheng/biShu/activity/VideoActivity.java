@@ -58,17 +58,8 @@ public class VideoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            // 隐藏状态栏和导航栏
-            /*View decorView = getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
-            ActionBar actionBar = getActionBar();
-            if (actionBar != null) {
-                actionBar.hide();
-            }*/
-            SysWindowUi.hideStatusNavigationBar(this, true);
-
             setContentView(R.layout.activity_video);
+            // 隐藏状态栏和导航栏 (通过主题设置的)
 
             Intent intent = this.getIntent();
 
@@ -285,7 +276,6 @@ public class VideoActivity extends AppCompatActivity {
     // 此activity失去焦点后再次获取焦点时调用(调用其他activity再回来时)
     @Override
     protected void onResume() {
-        // SysWindowUi.hideStatusNavigationBar(this, true);
         super.onResume();
         if (mVideoPlayer != null) {
             mVideoPlayer.onVideoResume();
@@ -295,7 +285,6 @@ public class VideoActivity extends AppCompatActivity {
     //再一次从后台 到前台时
     @Override
     protected void onRestart() {
-        // SysWindowUi.hideStatusNavigationBar(this, true);
         super.onRestart();
     }
 
@@ -328,8 +317,7 @@ public class VideoActivity extends AppCompatActivity {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            DisplayMetrics d = getResources().getDisplayMetrics();
-            if (ev.getY() <= 40 || ev.getX() <= 5|| d.heightPixels - ev.getY() <= 1) { // 上下
+            if (ev.getY() <= 40 || ev.getX() <= 5) { // 上左
                 return false; // 将边缘事件传递给系统
             }
         }

@@ -52,4 +52,20 @@
         <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
     </style>
 
+    <style name="VideoActivityTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- 黑色状态栏 -->
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <!-- 黑色导航栏 -->
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <!-- 允许布局扩展到系统栏下方 -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:ignore="NewApi">shortEdges</item>
+        <!-- 深色图标（适配浅色背景）关-->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">false</item>
+        <!-- ===== 黑色窗口背景 ===== -->
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
 </resources>

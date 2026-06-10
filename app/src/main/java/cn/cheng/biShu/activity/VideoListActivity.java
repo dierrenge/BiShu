@@ -84,10 +84,10 @@ public class VideoListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_video_list);
         // 状态栏设置透明
         SysWindowUi.hideStatusNavigationBar(this, false);
 
-        setContentView(R.layout.activity_video_list);
         back = findViewById(R.id.list_back);
         layout = findViewById(R.id.list_bg);
         video_file = findViewById(R.id.video_file);
@@ -443,7 +443,7 @@ public class VideoListActivity extends AppCompatActivity {
             @Override
             public boolean handleMessage(@NonNull Message message) {
                 if (message.what == 0) {
-                    if (videoUrls.size() > 0) {
+                    if (!videoUrls.isEmpty()) {
                         recyclerView.setVisibility(View.VISIBLE);
                         recyclerView.getAdapter().notifyDataSetChanged();
                         layout.setVisibility(View.GONE);

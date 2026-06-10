@@ -71,6 +71,7 @@ public class BrowserActivity2 extends AppCompatActivity {
         if (savedInstanceState != null) {
             currentUrl = savedInstanceState.getString("CURRENT_URL");
         }
+        setContentView(R.layout.activity_brower2);
         // 设置默认导航栏、状态栏样式
         SysWindowUi.setStatusBarNavigationBarStyle(this, SysWindowUi.NO_STATE__NO_STATE);
 
@@ -79,8 +80,6 @@ public class BrowserActivity2 extends AppCompatActivity {
 
         // 注册权限请求的返回监听
         initResultLauncherLauncher();
-
-        setContentView(R.layout.activity_brower2);
 
         layout_bg = findViewById(R.id.layout_bg);
         btn_menu2 = findViewById(R.id.btn_menu2);
@@ -189,7 +188,7 @@ public class BrowserActivity2 extends AppCompatActivity {
         // 检查 Activity 状态
         if (isFinishing() || isDestroyed()) return;
 
-        if (backStack.size() > 0) {
+        if (!backStack.isEmpty()) {
             preFragment = backStack.peek();
         }
 
@@ -279,6 +278,15 @@ public class BrowserActivity2 extends AppCompatActivity {
             // System.out.println("+++++++++++++++++++++++++" + next.getWebView().getUrl());
             backStack.push(next);
             showFragment(next);
+        } else {
+            // 如果没有可前进的页面，需要恢复当前 WebView 的状态
+            if (preFragment != null) {
+                WebView currentWebView = preFragment.getWebView();
+                if (currentWebView != null) {
+                    currentWebView.onResume();
+                    currentWebView.resumeTimers();
+                }
+            }
         }
     }
 
@@ -315,6 +323,7 @@ public class BrowserActivity2 extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             if (preFragment != null) {
                 fragmentTransaction.hide(preFragment);
+                preFragment.pauseMediaPlayback();
             }
             fragmentTransaction.show(fragment).commit();
             WebView webView = fragment.getWebView();
@@ -330,6 +339,11 @@ public class BrowserActivity2 extends AppCompatActivity {
             }
         } catch (Exception e) {
             CommonUtils.saveLog("===========showFragment===========" + e.getMessage());
+            // 异常情况下也要确保 WebView 恢复正常状态
+            if (fragment != null && fragment.getWebView() != null) {
+                fragment.getWebView().onResume();
+                fragment.getWebView().resumeTimers();
+            }
         }
     }
 
@@ -338,14 +352,14 @@ public class BrowserActivity2 extends AppCompatActivity {
         // 全屏播放处理
         @Override
         public void onEnterFullScreen(View view, WebChromeClient.CustomViewCallback callback) {
-            SysWindowUi.setStatusBarNavigationBarStyle(BrowserActivity2.this, SysWindowUi.NO_STATE__NO_NAVIGATION);
+            // SysWindowUi.setStatusBarNavigationBarStyle(BrowserActivity2.this, SysWindowUi.NO_STATE__NO_NAVIGATION);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             btn_menu2.setVisibility(View.GONE);
         }
 
         @Override
         public void onExitFullScreen() {
-            SysWindowUi.setStatusBarNavigationBarStyle(BrowserActivity2.this, SysWindowUi.NO_STATE__NO_STATE);
+            // SysWindowUi.setStatusBarNavigationBarStyle(BrowserActivity2.this, SysWindowUi.NO_STATE__NO_STATE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             btn_menu2.setVisibility(View.VISIBLE);
         }

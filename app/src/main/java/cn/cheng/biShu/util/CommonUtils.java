@@ -1298,11 +1298,11 @@ public class CommonUtils {
                     titles.add(map);
                 }
                 // 记录当前页面 对应的章节行数
-                if (startLine == i - 1 && titles.size() > 0) {
+                if (startLine == i - 1 && !titles.isEmpty()) {
                     index = titles.size() - 1;
                 }
             }
-            if (titles.size() > 0) {
+            if (!titles.isEmpty()) {
                 titles.get(0).put("index", index + "");
             }
         }
@@ -1754,7 +1754,7 @@ public class CommonUtils {
                         line = CommonUtils.removeBom(line);
                         likes.add(line);
                     }
-                    if (likes.size() > 0 && likes.contains(MyApplication.jumpUrl)) {
+                    if (!likes.isEmpty() && likes.contains(MyApplication.jumpUrl)) {
                         message.obj = "该网页已收藏过了。";
                         handler.sendMessage(message);
                         return;

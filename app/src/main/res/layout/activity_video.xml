@@ -10,6 +10,7 @@
     
     <cn.cheng.biShu.custom.video.SampleVideo
         android:id="@+id/video_player"
+        android:background="@color/black"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true" />
