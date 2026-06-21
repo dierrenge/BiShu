@@ -57,11 +57,11 @@ public class ReadService extends Service {
         String txt = intent.getStringExtra("txt");
         if (StringUtils.isEmpty(txt)) return START_STICKY;
         // 添加延迟确保旧资源完全释放
-        try {
+        /*try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
         // 朗读开始
         textToSpeech = new TextToSpeech(this, status -> {
             //判断是否转化成功

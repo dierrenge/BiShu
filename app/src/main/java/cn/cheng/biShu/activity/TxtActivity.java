@@ -348,7 +348,7 @@ public class TxtActivity extends AppCompatActivity {
                                     doubleClick = true;
                                     new Handler().postDelayed(() -> {
                                         doubleClick = false;
-                                    }, 1600);
+                                    }, 800);
                                 }
                             }
                             break;
