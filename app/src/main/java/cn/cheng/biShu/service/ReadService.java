@@ -7,7 +7,9 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 
@@ -29,6 +31,8 @@ public class ReadService extends Service {
     public static TextToSpeech textToSpeech;
     private final HeadphoneReceiver receiver = new HeadphoneReceiver();
     private long time;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile boolean isTTSAvailable = false;
 
     @Override
     public void onCreate() {
@@ -56,16 +60,35 @@ public class ReadService extends Service {
         String txtUrl = intent.getStringExtra("txtUrl");
         String txt = intent.getStringExtra("txt");
         if (StringUtils.isEmpty(txt)) return START_STICKY;
-        // 添加延迟确保旧资源完全释放
-        /*try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
+
+        destroyTTSAsync(() -> {
+            initializeAndSpeak(txtUrl, txt);
+        });
+
+        return START_STICKY;
+    }
+
+    private void destroyTTSAsync(Runnable onComplete) {
+        if (textToSpeech != null) {
+            speechDestroy();
+            mainHandler.postDelayed(() -> {
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }, 50);
+        } else {
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        }
+    }
+
+    private void initializeAndSpeak(String txtUrl, String txt) {
         // 朗读开始
         textToSpeech = new TextToSpeech(this, status -> {
             //判断是否转化成功
             if (status == TextToSpeech.SUCCESS) {
+                isTTSAvailable = true;
                 //设置语言为中文
                 int languageCode = textToSpeech.setLanguage(Locale.CHINA);
                 //判断是否支持这种语言，Android原生不支持中文，使用科大讯飞的tts引擎就可以了
@@ -87,8 +110,9 @@ public class ReadService extends Service {
                     }
                     @Override
                     public void onDone(String s) {
+                        if (!isTTSAvailable) return;
                         // 清除旧语音资源
-                        speechDestroy();
+                        destroyTTSAsync(null);
                         // 防止多翻页
                         long endTime = System.currentTimeMillis() - time;
                         if (txt.length() > 20 && endTime < 4000) return;
@@ -102,19 +126,19 @@ public class ReadService extends Service {
                     @Override
                     public void onError(String s) {
                         CommonUtils.saveLog("-------onError:" + s);
-                        // 错误时也要清理资源
-                        speechDestroy();
+                        if (isTTSAvailable) {
+                            destroyTTSAsync(null);
+                        }
                     }
                 });
                 // 在onInIt方法里直接调用tts的播报功能
                 textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null, "UniqueID");
             }
         });
-
-        return START_STICKY;
     }
 
     private void speechDestroy() {
+        isTTSAvailable = false;
         if (textToSpeech != null) {
             textToSpeech.setOnUtteranceProgressListener(null);
             textToSpeech.stop();
