@@ -75,7 +75,7 @@ public class ReadService extends Service {
                 if (onComplete != null) {
                     onComplete.run();
                 }
-            }, 50);
+            }, 100);
         } else {
             if (onComplete != null) {
                 onComplete.run();
