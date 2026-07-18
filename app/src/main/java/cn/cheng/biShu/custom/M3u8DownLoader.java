@@ -272,6 +272,7 @@ public class M3u8DownLoader {
         else urlContent = content;
         if (!urlContent.toString().contains("#EXTM3U"))
             throw new M3u8Exception(DOWNLOADURL + "不是m3u8链接");
+        // CommonUtils.saveLog("/n/n" + urlContent.toString());
         // 解析整理ts链接和加密key链接
         String[] split = urlContent.toString().split("\\n");
         boolean isTsUrl = false;
@@ -279,8 +280,7 @@ public class M3u8DownLoader {
         int n = 0;
         String relativeUrl = url.substring(0, url.lastIndexOf("/") + 1);
         String relativeUrl2 = DOWNLOADURL.split("//")[0] + "//" + new URI(DOWNLOADURL).getHost();
-        int discontinuityNum = 0;
-        ArrayList<String> m3u8LinesO = new ArrayList<>(); // 记录原文本内容
+        // int discontinuityNum = 0;
         for (int i = 0; i < split.length; i++) {
             String s = split[i];
             //如果含有此字段，则获取加密算法以及获取密钥的链接
@@ -295,16 +295,15 @@ public class M3u8DownLoader {
                         keyUrl = split1[1].split("=", 2)[1];
                 }
             } else {
-                // 过滤广告ts （还可以优化）
-                if (s.contains("#EXT-X-DISCONTINUITY")) {
-                    discontinuityNum++;
-                    if (discontinuityNum != 1) continue;
-                }
-                if (discontinuityNum > 0 && discontinuityNum % 2 == 0) continue;
+                // 过滤广告ts （还可以优化） 问题很多  先不了
+                // if (s.contains("#EXT-X-DISCONTINUITY")) {
+                //     discontinuityNum++;
+                //     if (discontinuityNum != 1) continue;
+                // }
+                // if (discontinuityNum > 0 && discontinuityNum % 2 == 0) continue;
                 // 保存m3u8文本行
                 if (!isTsUrl) {
                     m3u8Lines.add(s);
-                    m3u8LinesO.add(s);
                     if (s.contains("#EXTINF")) {
                         isTsUrl = true;
                     }
@@ -312,14 +311,11 @@ public class M3u8DownLoader {
                     //将ts片段链接加入set集合
                     if (s.startsWith("http://") || s.startsWith("https://")) {
                         tsList.add(s);
-                        m3u8LinesO.add(s);
                     } else {
                         if (s.startsWith("/")) {
                             tsList.add(relativeUrl2 + s);
-                            m3u8LinesO.add(relativeUrl2 + s);
                         } else {
                             tsList.add(relativeUrl + s);
-                            m3u8LinesO.add(relativeUrl + s);
                         }
                     }
                     //记录本地m3u8索引
@@ -341,21 +337,13 @@ public class M3u8DownLoader {
                 dir.mkdirs();
             }
             String absolutePath = supDir + "/" + fileName + ".m3u8";
-            String absolutePathO = absolutePath + "原";
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(absolutePath));
-            BufferedWriter bwO = new BufferedWriter(new FileWriter(absolutePathO))) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(absolutePath))) {
                 StringBuilder buffer = new StringBuilder();
                 for (String line : m3u8Lines) {
                     buffer.append(line + "\n");
                 }
                 bw.write(buffer.toString());
                 bw.flush();
-                StringBuilder bufferO = new StringBuilder();
-                for (String line : m3u8LinesO) {
-                    bufferO.append(line + "\n");
-                }
-                bwO.write(bufferO.toString());
-                bwO.flush();
                 notificationBean.setAbsolutePath(absolutePath);
             } catch (Exception e) {
                 e.printStackTrace();

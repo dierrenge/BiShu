@@ -4,18 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
@@ -23,9 +17,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
 
 import cn.cheng.biShu.MyApplication;
 import cn.cheng.biShu.R;
@@ -166,8 +163,12 @@ public class BrowserActivity2 extends AppCompatActivity {
         }
         // CommonUtils.saveLog("打开方式-网络链接：" + currentUrl);
 
-        // 加载初始页面
-        navigateTo(WebViewFragment.newInstance(currentUrl));
+        // 【修改】进程被杀恢复时，FragmentManager 已自动恢复 Fragment，不需要再新建
+        if (savedInstanceState == null) {
+            navigateTo(WebViewFragment.newInstance(currentUrl));
+        } else {
+            restoreFragmentStack();
+        }
     }
 
     // 注册权限请求的返回监听
@@ -181,6 +182,25 @@ public class BrowserActivity2 extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    // 【新增】进程被杀后从 FragmentManager 恢复 backStack
+    private void restoreFragmentStack() {
+        try {
+            List<Fragment> fragments = getSupportFragmentManager().getFragments();
+            if (fragments != null) {
+                for (Fragment f : fragments) {
+                    if (f instanceof WebViewFragment && ((WebViewFragment) f).getWebView() != null) {
+                        WebViewFragment wf = (WebViewFragment) f;
+                        wf.setFullScreenListener(callListener);
+                        wf.setResultLauncher(resultLauncher);
+                        backStack.push(wf);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            CommonUtils.saveLog("restoreFragmentStack error: " + e.getMessage());
+        }
     }
 
     // 跳转到新页面
@@ -321,7 +341,7 @@ public class BrowserActivity2 extends AppCompatActivity {
     private void showFragment(WebViewFragment fragment) {
         try {
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            if (preFragment != null) {
+            if (preFragment != null && preFragment != fragment) {
                 fragmentTransaction.hide(preFragment);
                 preFragment.pauseMediaPlayback();
             }
@@ -421,15 +441,38 @@ public class BrowserActivity2 extends AppCompatActivity {
         if (backStack.isEmpty() && currentUrl != null) {
             navigateTo(WebViewFragment.newInstance(currentUrl));
         }
-        // 恢复可见的 Fragment
-        if (!backStack.isEmpty()) {
-            showFragment(backStack.peek());
-        }
+        // 【修改】移除 showFragment 调用，避免双重 onResume/resumeTimers 导致卡死
+        // Fragment 自身的 onResume 已会恢复 WebView，无需此处重复调用
+        // if (!backStack.isEmpty()) {
+        //     showFragment(backStack.peek());
+        // }
         /**
          * 设置为横屏
          */
         if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+    }
+
+    // 【新增】内存紧张时销毁不可见的 WebView，降低被系统杀进程的概率
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_MODERATE && backStack.size() > 1) {
+            WebViewFragment top = backStack.peek();
+            List<WebViewFragment> toRemove = new ArrayList<>();
+            for (WebViewFragment fragment : backStack) {
+                if (fragment != top && fragment.getWebView() != null) {
+                    fragment.getWebView().destroy();
+                    toRemove.add(fragment);
+                }
+            }
+            for (WebViewFragment f : toRemove) {
+                backStack.remove(f);
+                try {
+                    getSupportFragmentManager().beginTransaction().remove(f).commit();
+                } catch (Exception ignored) {}
+            }
         }
     }
 

@@ -1139,14 +1139,39 @@ public class WebViewFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (sysBean.isFlagSpider()) return; // 爬虫调试时允许webview后台运行
-        // 激活webView
-        webView.onResume();
-        webView.resumeTimers();
+        // 【修改】增加 try-catch，防止长时间后台后 WebView 渲染进程被杀导致主线程阻塞卡死
+        try {
+            webView.onResume();
+            webView.resumeTimers();
+        } catch (Exception e) {
+            CommonUtils.saveLog("onResume webView error: " + e.getMessage());
+            reloadWebView();
+        }
         if (onCreated) {
             // 初始化系统参数
             initSetting();
         } else {
             onCreated = true;
+        }
+    }
+
+    // 【新增】WebView 异常后重新加载恢复
+    private void reloadWebView() {
+        if (webView == null || getActivity() == null) return;
+        try {
+            String url = MyApplication.jumpUrl;
+            if (StringUtils.isEmpty(url)) {
+                Bundle args = getArguments();
+                if (args != null) {
+                    url = args.getString("url");
+                }
+            }
+            if (StringUtils.isNotEmpty(url)) {
+                webView.stopLoading();
+                webView.loadUrl(url);
+            }
+        } catch (Exception e) {
+            CommonUtils.saveLog("reloadWebView error: " + e.getMessage());
         }
     }
 
