@@ -33,6 +33,8 @@ public class ReadService extends Service {
     private long time;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private volatile boolean isTTSAvailable = false;
+    // 【新增】TTS代次计数器，用于消除章节切换时的竞态条件
+    private volatile int ttsGeneration = 0;
 
     @Override
     public void onCreate() {
@@ -54,6 +56,10 @@ public class ReadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // 【新增】递增代次，使旧的TTS回调自动失效
+        ttsGeneration++;
+        // 【新增】捕获当前代次，供后续闭包引用
+        int myGeneration = ttsGeneration;
         // 清除旧语音资源
         speechDestroy();
         // 获取上一界面传过来的数据
@@ -62,7 +68,10 @@ public class ReadService extends Service {
         if (StringUtils.isEmpty(txt)) return START_STICKY;
 
         destroyTTSAsync(() -> {
-            initializeAndSpeak(txtUrl, txt);
+            // 【新增】代次校验：若已有新的onStartCommand到来，跳过旧的初始化
+            if (myGeneration == ttsGeneration) {
+                initializeAndSpeak(txtUrl, txt);
+            }
         });
 
         return START_STICKY;
@@ -75,7 +84,7 @@ public class ReadService extends Service {
                 if (onComplete != null) {
                     onComplete.run();
                 }
-            }, 250);
+            }, 100);
         } else {
             if (onComplete != null) {
                 onComplete.run();
@@ -84,8 +93,12 @@ public class ReadService extends Service {
     }
 
     private void initializeAndSpeak(String txtUrl, String txt) {
+        // 【新增】捕获当前代次，供TTS初始化回调及监听器引用
+        int myGeneration = ttsGeneration;
         // 朗读开始
         textToSpeech = new TextToSpeech(this, status -> {
+            // 【新增】代次校验：若已过期（新章节已开始），丢弃此次初始化
+            if (myGeneration != ttsGeneration) return;
             //判断是否转化成功
             if (status == TextToSpeech.SUCCESS) {
                 isTTSAvailable = true;
@@ -110,6 +123,8 @@ public class ReadService extends Service {
                     }
                     @Override
                     public void onDone(String s) {
+                        // 【新增】代次校验：若已过期（新章节已开始），不发送翻页广播
+                        if (myGeneration != ttsGeneration) return;
                         if (!isTTSAvailable) return;
                         // 清除旧语音资源
                         destroyTTSAsync(null);
@@ -126,6 +141,8 @@ public class ReadService extends Service {
                     @Override
                     public void onError(String s) {
                         CommonUtils.saveLog("-------onError:" + s);
+                        // 【新增】代次校验：若已过期，不处理
+                        if (myGeneration != ttsGeneration) return;
                         if (isTTSAvailable) {
                             destroyTTSAsync(null);
                         }
