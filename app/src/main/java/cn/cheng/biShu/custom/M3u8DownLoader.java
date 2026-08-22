@@ -165,7 +165,7 @@ public class M3u8DownLoader {
                 httpURLConnection.setRequestProperty("Access-Control-Allow-Headers", "*");
                 // 允许前端带认证cookie：启用此项后，上面的域名不能为'*'，必须指定具体的域名，否则浏览器会提示
                 httpURLConnection.setRequestProperty("Access-Control-Allow-Credentials", "true");
-
+                httpURLConnection.setRequestProperty("Range", "bytes=0-");
                 // 模拟 防盗链设置
                 httpURLConnection.addRequestProperty("Referer", urls);
 
@@ -418,6 +418,7 @@ public class M3u8DownLoader {
                     httpURLConnection.setUseCaches(false);
                     httpURLConnection.setReadTimeout((int) timeoutMillisecond);
                     httpURLConnection.setDoInput(true);
+                    httpURLConnection.addRequestProperty("origin", notificationBean.getUrlHead()); // 有些网站需要这个
                     InputStream inputStream = httpURLConnection.getInputStream();
                     outputStream = new FileOutputStream(file2);
                     int len;
@@ -619,6 +620,7 @@ public class M3u8DownLoader {
                     if (absolutePath == null || !new File(absolutePath).exists() || notificationBean.getTsList().isEmpty()
                             || notificationBean.getKey() == null || notificationBean.getMethod() == null) {
                         notificationBean.getTsList().clear();
+                        notificationBean.setUrlHead(CommonUtils.getUrlHead(MyApplication.jumpUrl));
                         getTsUrl(); // 首次获取ts片段
                     } else {
                         finishedCount = notificationBean.getHlsFinishedCount(); // 非首次继续上次进度

@@ -28,6 +28,7 @@ public class NotificationBean {
     private String date; // 下载日期
     private String method; //解密算法名称
     private String key = ""; // 密钥
+    private String urlHead = ""; // 网站首页的http协议及域名
 
     public String getTitle() {
         return title;
@@ -187,5 +188,13 @@ public class NotificationBean {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getUrlHead() {
+        return urlHead;
+    }
+
+    public void setUrlHead(String urlHead) {
+        this.urlHead = urlHead;
     }
 }
