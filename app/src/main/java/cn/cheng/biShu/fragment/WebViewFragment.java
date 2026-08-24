@@ -772,10 +772,10 @@ public class WebViewFragment extends Fragment {
             if (isAd(url)) {
                 return AdBlocker.createEmptyResource();
             }
-            // 爬虫调试 禁止非HTML主文档
-            if (sysBean.isFlagSpider() && !request.isForMainFrame()) {
+            // 爬虫调试 禁止非HTML主文档  有的网站不可行
+            /*if (sysBean.isFlagSpider() && !request.isForMainFrame()) {
                 return AdBlocker.createEmptyResource();
-            }
+            }*/
 
             // 检查 Activity 状态
             if (getActivity() != null && !isDetached()) {
