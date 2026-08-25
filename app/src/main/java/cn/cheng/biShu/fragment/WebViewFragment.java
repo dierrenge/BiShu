@@ -773,9 +773,9 @@ public class WebViewFragment extends Fragment {
                 return AdBlocker.createEmptyResource();
             }
             // 爬虫调试 禁止非HTML主文档  有的网站不可行
-            /*if (sysBean.isFlagSpider() && !request.isForMainFrame()) {
+            if (sysBean.isFlagSpider() && !request.isForMainFrame()) {
                 return AdBlocker.createEmptyResource();
-            }*/
+            }
 
             // 检查 Activity 状态
             if (getActivity() != null && !isDetached()) {
@@ -868,8 +868,8 @@ public class WebViewFragment extends Fragment {
             // String cookies = CookieManager.getInstance().getCookie(url);
             // CommonUtils.saveLog("\n==cookies:" + cookies + "\n" + url + "\n");
 
-            // 仅处理用户触发的 非重定向 主框架请求 (有很多非手动触发但也正常的跳转，故将request.hasGesture()去除)
-            if ((request.getRequestHeaders() == null || request.getRequestHeaders().get("Referer") == null)
+            // 仅处理用户触发的 非重定向 主框架请求 (有很多非手动触发但也正常的跳转，故将request.hasGesture()去除) (爬虫必须要进来)
+            if (sysBean.isFlagSpider() || (request.getRequestHeaders() == null || request.getRequestHeaders().get("Referer") == null)
                     && !request.isRedirect() && request.isForMainFrame() /*&& request.hasGesture()*/ && flag) {
                 if (callListener != null) {
                     // 暂停webView
