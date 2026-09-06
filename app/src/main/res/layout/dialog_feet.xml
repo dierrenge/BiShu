@@ -136,10 +136,11 @@
 
             <Button
                 android:id="@+id/dialog_close"
-                android:layout_width="145dp"
+                android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_gravity="center"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="16dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="28dp"
                 android:background="@drawable/feet_dialog_btn_bg"
@@ -158,11 +159,12 @@
 
             <Button
                 android:id="@+id/dialog_set_ok"
-                android:layout_width="145dp"
+                android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
-                android:layout_marginRight="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="20dp"
                 android:layout_marginBottom="28dp"
                 android:background="@drawable/feet_dialog_btn_bg2"
                 android:text="下载"

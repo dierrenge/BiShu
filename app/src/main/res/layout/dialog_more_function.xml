@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="280dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/download_dialog_bg"
     android:gravity="center|bottom"
     android:orientation="vertical">
@@ -23,15 +24,18 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
+        <com.google.android.flexbox.FlexboxLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            app:flexWrap="wrap"
+            app:alignItems="flex_start"
+            app:justifyContent="flex_start">
             <Button
                 android:id="@+id/historyBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
@@ -41,6 +45,7 @@
                 android:id="@+id/novelBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
@@ -50,6 +55,7 @@
                 android:id="@+id/downloadMoreBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
@@ -59,6 +65,7 @@
                 android:id="@+id/settingMoreBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
@@ -68,6 +75,7 @@
                 android:id="@+id/settingAdBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
@@ -77,12 +85,13 @@
                 android:id="@+id/spiderSetBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginLeft="20dp"
                 android:background="@drawable/btn_bg1"
                 android:textColor="@color/blackGray"
                 android:textSize="16dp"
                 android:text="爬书"/>
-        </LinearLayout>
+        </com.google.android.flexbox.FlexboxLayout>
 
     </LinearLayout>
 

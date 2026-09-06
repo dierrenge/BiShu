@@ -1,6 +1,7 @@
 package cn.cheng.biShu.service;
 
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 
@@ -111,10 +113,19 @@ public class ReadService extends Service {
                     //不支持就改成英文
                     textToSpeech.setLanguage(Locale.US);
                 }
+                ContentResolver resolver = this.getContentResolver();
+                // 获取音高，默认值为 100 (对应 1.0x)
+                int systemPitch = Settings.Secure.getInt(resolver, Settings.Secure.TTS_DEFAULT_PITCH, 100);
+                // 转换为 TextToSpeech 使用的 float 值
+                float pitchValue = systemPitch / 100.0f;
                 // 设置音调,值越大声音越尖（女生），值越小则变成男声,1.0是常规
-                textToSpeech.setPitch(1.0f);
+                textToSpeech.setPitch(pitchValue);
+                // 获取语速，默认值为 100 (对应 1.0x)
+                int systemRate = Settings.Secure.getInt(resolver, Settings.Secure.TTS_DEFAULT_RATE, 100);
+                // 转换为 TextToSpeech 使用的 float 值 (例如 100 -> 1.0f, 150 -> 1.5f)
+                float rateValue = systemRate / 100.0f;
                 // 设置语速
-                textToSpeech.setSpeechRate(3.6f);
+                textToSpeech.setSpeechRate(rateValue);
                 // 监听朗读结束
                 textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                     @Override

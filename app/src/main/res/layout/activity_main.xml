@@ -69,6 +69,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
+        android:id="@+id/btn_box"
         android:layout_width="300dp"
         android:layout_height="70dp"
         android:orientation="horizontal"
@@ -123,7 +124,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="75dp"
-        app:layout_constraintTop_toBottomOf="@+id/editBox"
+        app:layout_constraintTop_toBottomOf="@+id/btn_box"
         app:layout_constraintBottom_toBottomOf="parent"
         android:gravity="center"
         android:orientation="vertical"
