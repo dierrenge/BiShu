@@ -35,8 +35,11 @@ public class NotificationUtils {
             NotificationManager nm = context.getSystemService(NotificationManager.class);
             if (nm.getNotificationChannel(channelKey) == null) {
                 NotificationChannel c = new NotificationChannel(channelKey, "悬浮窗服务",
-                        NotificationManager.IMPORTANCE_DEFAULT
+                        NotificationManager.IMPORTANCE_LOW // 无提示音
                 );
+                // 显式关闭声音和振动（双重保险）
+                c.setSound(null, null); 
+                c.enableVibration(false);
                 nm.createNotificationChannel(c);
             }
         }
@@ -57,7 +60,7 @@ public class NotificationUtils {
                 .setContentText(text)
                 .setChannelId(channelKey)
                 .setGroup(groupKey) // 绑定组ID
-                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY) // 仅摘要通知触发提醒
+                // .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY) // 仅摘要通知触发提醒
                 .setAutoCancel(false)
                 .setWhen(System.currentTimeMillis());
         // 跳转指定Activity的Intent
@@ -135,7 +138,7 @@ public class NotificationUtils {
                 .setSmallIcon(R.mipmap.app_logo_r)
                 .setGroup(groupKey)
                 .setGroupSummary(true) // 关键：声明为摘要通知
-                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
+                // .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
                 .build();
     }
 
