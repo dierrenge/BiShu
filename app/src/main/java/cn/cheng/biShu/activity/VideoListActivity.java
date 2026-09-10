@@ -612,6 +612,6 @@ public class VideoListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // 读取影音文件地址
-        new Handler().post(this::initVideoUrls);
+        new Handler().postDelayed(this::initVideoUrls, 400);
     }
 }

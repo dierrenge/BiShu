@@ -596,6 +596,6 @@ public class TxtListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // 读取文本文件地址
-        new Handler().post(this::initTxtUrls);
+        new Handler().postDelayed(this::initTxtUrls, 400);
     }
 }

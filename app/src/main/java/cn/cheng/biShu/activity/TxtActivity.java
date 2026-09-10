@@ -480,6 +480,10 @@ public class TxtActivity extends AppCompatActivity {
             Message message = handler.obtainMessage();
             message.what = 1;
             handler.sendMessage(message);
+        } else if (txtUrl.contains("（循环）")) { // 特殊情况可以循环
+            positionBean.setEndLine(-1);
+            positionBean.setEndNum(0);
+            setNextPosition();
         }
     }
 
