@@ -48,9 +48,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -212,7 +214,7 @@ public class CommonUtils {
         fileListSort(fileList);
     }
 
-    // 文件列表排序(先按字符串长度排序，其次按字符串中的数字大小排序)
+    // 文件列表排序(先按字符串长度排序，其次按字符串中的数字大小排序，排除数字后字符串相同则同组排列)
     public static void fileListSort(List<String> fileList) {
         Collections.sort(fileList, new Comparator<String>() {
             @Override
@@ -230,11 +232,15 @@ public class CommonUtils {
                 for (String s : nums2) {
                     o2X = o2X.replace(s, "");
                 }
+                BigInteger o1Num = toNumber(o1X);
+                o1Num = o1Num.multiply(new BigInteger("100"));
+                BigInteger o2Num = toNumber(o2X);
+                o2Num = o2Num.multiply(new BigInteger("100"));
                 // 比较去除数字后的字符串长度
                 if (o1X.length() == o2X.length()) {
                     // 去除数字后的字符串长度 相同时
                     if (nums1.size() == nums2.size() && nums1.isEmpty()) {
-                        return 0;
+                        return o1Num.compareTo(o2Num);
                     } else {
                         if (nums1.isEmpty() || nums2.isEmpty()) {
                             return nums1.size() - nums2.size() > 0 ? 1 : -1;
@@ -254,11 +260,13 @@ public class CommonUtils {
                                         }
                                         num1 = Double.parseDouble(numStr1);
                                         num2 = Double.parseDouble(numStr2);
-                                        return num1 - num2 > 0 ? 1 : -1;
+                                        BigDecimal finalNum1 = new BigDecimal(o1Num).add(BigDecimal.valueOf(num1));
+                                        BigDecimal finalNum2 = new BigDecimal(o2Num).add(BigDecimal.valueOf(num2));
+                                        return finalNum1.compareTo(finalNum2);
                                     }
                                 }
                             }
-                            return 0;
+                            return o1Num.compareTo(o2Num);
                         }
                     }
                 } else {
@@ -267,6 +275,12 @@ public class CommonUtils {
                 }
             }
         });
+    }
+
+    // 任意字符转换成数字
+    public static BigInteger toNumber(String s) {
+        if (s == null || s.isEmpty()) return BigInteger.ZERO;
+        return new BigInteger(1, s.getBytes(StandardCharsets.UTF_8)); // 1 = 强制正数
     }
 
     /**
