@@ -796,10 +796,14 @@ public class WebViewFragment extends Fragment {
                     } catch (Throwable e) {}
 
                     String title = view.getTitle();
+                    // System.out.println(url + " ============1==================");
                     // 判断格式
                     String format = CommonUtils.getUrlFormat(url);
                     Message msg = Message.obtain();
-                    if (StringUtils.isNotEmpty(format)) {// 有格式的情况
+                    List<String> formats = AssetsReader.getList("audioVideo.txt");
+                    if (StringUtils.isEmpty(format)) format = !url.contains(".") ? "" : url.substring(url.lastIndexOf("."));
+                    // System.out.println(format + " ============3333==================");
+                    if (StringUtils.isNotEmpty(format) || formats.contains(format)) {// 有格式的情况
                         // 判断视频请求
                         if (format.equals(".mp4") || format.equals(".avi") || format.equals(".mov") || format.equals(".mkv") ||
                                 format.equals(".flv") || format.equals(".f4v") || format.equals(".rmvb") || format.equals(".m3u8")) {
@@ -829,7 +833,7 @@ public class WebViewFragment extends Fragment {
                                 }
                                 // System.out.println(url + "*******************1***********************" + fileType);
                                 // 影音文件格式
-                                List<String> formats = AssetsReader.getList("audioVideo.txt");
+                                // List<String> formats = AssetsReader.getList("audioVideo.txt");
                                 fileType = "." + fileType;
                                 if (formats.contains(fileType)) {
                                     String[] arr = new String[]{title, urlOrg, fileType};
